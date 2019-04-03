@@ -1,0 +1,3 @@
+zlib1g-dev (Ubuntu/debian) OR zlib-devel (RPM based)
+disabling bz2 and lzma for htstools
+when making htslib, set prefix to above /bin etc.
