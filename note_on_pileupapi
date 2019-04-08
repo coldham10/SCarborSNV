@@ -1,0 +1,3 @@
+    /**
+     *  bam_plp_init() - sets an iterator over multiple
+     *  @func:      see mplp_func in bam_plcmd.c in samtools for an example. Expected return

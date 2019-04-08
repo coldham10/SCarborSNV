@@ -1,0 +1,2 @@
+ u can use make -C from in make to call makefile from other dir
+MAYBE better to use samtools not htstools? samtools doesn't actually have much more of an api, can copy mpileup code from samtools as backbone for piler

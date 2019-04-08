@@ -1,2 +1,0 @@
-g++ -I../include/htslib -L../lib SCarborSNV.cpp -o test -lhts
-
