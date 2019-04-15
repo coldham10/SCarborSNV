@@ -5,8 +5,9 @@
 typedef struct {
     double l_lambda;
     double l_P_H;
+    double l_mu;
     unsigned int m;
-} initial_consts;
+} prior_params;
 
 /* Returns the log prior probabilities for alternate allele count (sigma)
  * across a collection of m cells. Returned vector contains 2m+1 values
