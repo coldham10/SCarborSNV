@@ -5,6 +5,7 @@
 double log_prior(int m, int sig);
 long double log_factorial(int x);
 long double l_P_intree__somatic(int m, double l_P_clonal);
+long double l_P_sig__sSNV_NSNVT(int m, int sig, double l_P_H, long double l_P_HT__H);
 
 std::vector<double> log_sigma_priors(int m) {
     std::vector<double> l_prior_vec; 
@@ -19,7 +20,7 @@ std::vector<double> log_sigma_priors(int m) {
 double log_prior(int m, int sig) {
     //FIXME
     static long double l_P_tree = l_P_intree__somatic(m, std::log(0.51));
-    return static_cast<double>(l_P_tree);
+    return l_P_sig__sSNV_NSNVT(m, sig, std::log(0.09), l_P_tree);
 }
 
 long double log_factorial(int x) {
@@ -51,7 +52,7 @@ long double l_P_ancestral__subclonal(int m) {
     //Assumes a neutral evolution model.
     //TODO check that 50 is sufficient
     if (m >= 50) {
-        return static_cast<long double>(0);
+        return std::log(static_cast<long double>(0));
     }
     long double f_lower = 1.0e-8;
     long double f_upper = 0.5;
@@ -71,15 +72,44 @@ long double l_P_ancestral__subclonal(int m) {
     term_2 = term_2 + diff_pow_m1;
 
     //TODO inplement more underflow resistant function to handle this sort of situation.
-    //FIXME currently term 2 is larger than term 1, giving a negative value to log!
     return l_k + std::log(std::exp(term_1) - std::exp(term_2));
 }
 
 long double l_P_intree__somatic(int m, double l_P_clonal) {
+    //TODO memoize
     long double P_clonal = std::exp(static_cast<long double>(l_P_clonal));
     long double l_P_ancestral = l_P_ancestral__subclonal(m) + std::log(1-P_clonal);
     //TODO logaddexp
-    return std::log(P_clonal + std::exp(l_P_ancestral));
+    return std::log(1 - P_clonal - std::exp(l_P_ancestral));
 }
 
+inline long double l_P_sig__sSNV_NSNVT_H_NHT(int m, int sig) {
+     return std::log(static_cast<long double>((sig == 0 || sig == 2*m) ? 0.5 : 0 ));
+}
 
+long double l_P_sig__sSNV_NSNVT_HT(int m, int sig) {
+    if (sig > m) {
+        return std::log(0.5) + l_T(m, sig-m);
+    } else if (m > sig) {
+        return std::log(0.5) + l_T(m, m-sig);
+    } else {
+        return std::log(0.0);
+    }
+}
+
+long double l_P_sig__sSNV_NSNVT_H(int m, int sig, long double l_P_HT__H) {
+    long double term_1 = std::log(1-std::exp(l_P_HT__H)) + l_P_sig__sSNV_NSNVT_H_NHT(m, sig);
+    long double term_2 = l_P_HT__H + l_P_sig__sSNV_NSNVT_HT(m, sig);
+    return std::log(std::exp(term_1) + std::exp(term_2));
+}
+
+inline long double l_P_sig__sSNV_NSNVT_NH(int m, int sig) {
+     return std::log(static_cast<long double>((sig == m) ? 1 : 0 ));
+}
+
+long double l_P_sig__sSNV_NSNVT(int m, int sig, double l_P_H, long double l_P_HT__H) {
+    long double term_1 = l_P_sig__sSNV_NSNVT_H(m, sig, l_P_HT__H) + static_cast<long double>(l_P_H);
+    long double term_2 = l_P_sig__sSNV_NSNVT_NH(m, sig) + std::log(1-std::exp(static_cast<long double>(l_P_H)));
+    //TODO logaddexp
+    return std::log(std::exp(term_1) + std::exp(term_2));
+}
