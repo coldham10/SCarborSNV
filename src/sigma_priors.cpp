@@ -2,27 +2,22 @@
 #include <cmath>
 #include "sigma_priors.h"
 
-double log_prior(int m, int sig);
 long double log_factorial(int x);
-long double l_P_intree__somatic(int m, double l_P_clonal);
-//long double l_P_sig__sSNV_NSNVT(int m, int sig, double l_P_H, long double l_P_HT__H);
-long double l_P_sig__SNVT_H(int m, int sig, long double l_P_HT__H);
+long double l_P_intree__somatic(int m, long double l_P_clonal);
+long double l_P_sig(int m, int sig, prior_params* p);
 
-std::vector<double> log_sigma_priors(int m) {
+/* Note on function names, for example: "l_P_sig__sSNV_NSNVT_H_NHT" is read as
+ * log probability of sigma given there is a somatic SNV shared by all cells
+ * and there is a haploid event shared by all cells */
+
+std::vector<double> log_sigma_priors(prior_params* p) {
+    int m = p->m;
     std::vector<double> l_prior_vec; 
-    //todo input prior params struct
-
-    for (int i = 0; i <= 2*m; i++) {
-        l_prior_vec.push_back(log_prior(m, i));
+    p->l_P_tree = l_P_intree__somatic(m, p->l_P_clonal);
+    for (int sig = 0; sig <= 2*m; sig++) {
+        l_prior_vec.push_back(l_P_sig(m, sig, p));
     }
     return l_prior_vec;
-}
-
-double log_prior(int m, int sig) {
-    //FIXME
-    static long double l_P_tree = l_P_intree__somatic(m, std::log(0.51));
-    //return l_P_sig__sSNV_NSNVT(m, sig, std::log(0.09), l_P_tree);
-    return l_P_sig__SNVT_H(m, sig, l_P_tree);
 }
 
 long double log_factorial(int x) {
@@ -62,6 +57,10 @@ inline long double LSE(long double arg1, long double arg2) {
     std::vector<long double> v{arg1, arg2};
     return LSE(v);
 }
+
+/* Mutant Priors */
+
+
 long double l_T(int a, int b) {
     //Kuipers et al. inspired tree function
     long double numerator = 2 * log_binom(a,b);
@@ -97,8 +96,8 @@ long double l_P_ancestral__subclonal(int m) {
     return l_k + std::log(std::exp(term_1) - std::exp(term_2));
 }
 
-long double l_P_intree__somatic(int m, double l_P_clonal) {
-    long double P_clonal = std::exp(static_cast<long double>(l_P_clonal));
+long double l_P_intree__somatic(int m, long double l_P_clonal) {
+    long double P_clonal = std::exp(l_P_clonal);
     long double l_P_ancestral = l_P_ancestral__subclonal(m) + std::log(1-P_clonal);
     //TODO logaddexp
     return std::log(1 - P_clonal - std::exp(l_P_ancestral));
@@ -128,13 +127,11 @@ inline long double l_P_sig__sSNV_NSNVT_NH(int m, int sig) {
      return std::log(static_cast<long double>((sig == m) ? 1 : 0 ));
 }
 
-long double l_P_sig__sSNV_NSNVT(int m, int sig, double l_P_H, long double l_P_HT__H) {
-    long double term_1 = l_P_sig__sSNV_NSNVT_H(m, sig, l_P_HT__H) + static_cast<long double>(l_P_H);
-    long double term_2 = l_P_sig__sSNV_NSNVT_NH(m, sig) + std::log(1-std::exp(static_cast<long double>(l_P_H)));
+long double l_P_sig__sSNV_NSNVT(int m, int sig, long double l_P_H, long double l_P_HT__H) {
+    long double term_1 = l_P_sig__sSNV_NSNVT_H(m, sig, l_P_HT__H) + l_P_H;
+    long double term_2 = l_P_sig__sSNV_NSNVT_NH(m, sig) + std::log(1-std::exp(l_P_H));
     return LSE(term_1, term_2);
 }
-
-
 
 long double l_P_sig__SNVT_HT(int m, int sig) {
     std::vector<long double> to_sum;
@@ -171,5 +168,79 @@ long double l_P_sig__SNVT_H_NHT(int m, int sig) {
 long double l_P_sig__SNVT_H(int m, int sig, long double l_P_HT__H) {
     long double term_1 = l_P_sig__SNVT_HT(m, sig) + l_P_HT__H;
     long double term_2 = l_P_sig__SNVT_H_NHT(m, sig) + std::log(1-std::exp(l_P_HT__H));
+    return LSE(term_1, term_2);
+}
+
+long double l_P_sig__SNVT_NH(int m, int sig) {
+    if (sig == 0 || sig >= m) {
+        return std::log(static_cast<long double>(0));
+    }
+    return std::log(static_cast<long double>(2*m - 1)) 
+        - std::log(static_cast<long double>(2*(m-1)))
+        + l_T(m, sig);
+}
+
+long double l_P_sig__SNVT(int m, int sig, long double l_P_H, long double l_P_HT__H) {
+    long double term_1 = l_P_sig__SNVT_H(m, sig, l_P_HT__H) + l_P_H;
+    long double term_2 = l_P_sig__SNVT_NH(m, sig) + std::log(1-std::exp(l_P_H));
+    return LSE(term_1, term_2);
+}
+
+long double l_P_sig__sSNV(int m, int sig, long double l_P_H, long double l_P_tree) {
+    //FIXME does not sum to 1 if m=1
+    long double term_1 = l_P_sig__SNVT(m, sig, l_P_H, l_P_tree) + l_P_tree;
+    long double term_2 = l_P_sig__sSNV_NSNVT(m, sig, l_P_H, l_P_tree) + std::log(1-std::exp(l_P_tree));
+    return LSE(term_1, term_2);
+}
+
+/* Welltype Priors */
+
+long double l_P_sig__NsSNV_H(int m, int sig, long double l_mu, long double l_P_HT__H) {
+    long double term_1, term_2;
+    long double l_om_mu = std::log(1-std::exp(l_mu));
+    long double l_om_P_HT__H = std::log(1-std::exp(l_P_HT__H));
+    if (sig == 0) {
+        term_1 = 2 * l_om_mu;
+        term_2 = l_mu + l_om_mu + l_om_P_HT__H;
+        return LSE(term_1, term_2);
+    } else if (sig > 0 && sig < 2*m && sig != m) {
+        term_1 = l_mu + l_om_mu + l_P_HT__H;
+        term_2 = l_T(m, std::abs(sig-m)) + std::log(2*m-1) - std::log(2*(m-1));
+        return term_1 + term_2;
+    } else if (sig == m) {
+        return std::log(static_cast<long double>(0));
+    } else if (sig == 2*m) {
+        term_1 = 2 * l_mu;
+        term_2 = l_mu + l_om_mu + l_om_P_HT__H;
+        return LSE(term_1, term_2);
+    } else {
+        return -1;
+    }
+}
+
+long double l_P_sig__NsSNV_NH(int m, int sig, long double l_mu) {
+    //HWE
+    long double l_om_mu = std::log(1-std::exp(l_mu));
+    if (sig == 0) {
+        return 2*l_om_mu;
+    } else if (sig == m) {
+        return std::log(static_cast<long double>(2)) + l_mu + l_om_mu;
+    } else if (sig == 2*m) {
+        return 2*l_mu;
+    } else {
+        return std::log(static_cast<long double>(0));
+    }
+}
+
+long double l_P_sig__NsSNV(int m, int sig, long double l_mu, long double l_P_H, long double l_P_HT__H) {
+    long double term_1 = l_P_sig__NsSNV_H(m, sig, l_mu, l_P_HT__H) + l_P_H;
+    long double term_2 = l_P_sig__NsSNV_NH(m, sig, l_mu) + std::log(1-std::exp(l_P_H));
+    return LSE(term_1, term_2);
+}
+
+long double l_P_sig(int m, int sig, prior_params* p) {
+    long double l_om_lambda = std::log(1-std::exp(static_cast<long double>(p->l_lambda)));
+    long double term_1 = p->l_lambda + l_P_sig__sSNV(m, sig, p->l_P_H, p->l_P_tree);
+    long double term_2 = l_om_lambda + l_P_sig__NsSNV(m, sig, p->l_mu, p->l_P_H, p->l_P_tree);
     return LSE(term_1, term_2);
 }
