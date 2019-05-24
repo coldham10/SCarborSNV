@@ -1,12 +1,14 @@
 #ifndef SCARBORSNV_H_
 #define SCARBORSNV_H_
 
+static const char A = 0;
+static const char C = 1;
+
 typedef struct {
     unsigned int n_threads;
-    unsigned int mp_isfile; //piling up is to be handled by SCarborSNV //TODO if many flags can do bit field
-//    char mp_fname[256];
+    bool mp_isfile; //TODO: piling up is to be handled by SCarborSNV
     std::string mp_fname;
-} global_params;
+} global_params_t;
 
 
 #endif  //SCARBORSNV_H_

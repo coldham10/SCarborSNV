@@ -2,23 +2,10 @@
 #include <cmath>
 #include "sigma_priors.h"
 
-long double log_factorial(int x);
-long double l_P_intree__somatic(int m, long double l_P_clonal);
-long double l_P_sig(int m, int sig, prior_params* p);
-
 /* Note on function names, for example: "l_P_sig__sSNV_NSNVT_H_NHT" is read as
  * log probability of sigma given there is a somatic SNV shared by all cells
  * and there is a haploid event shared by all cells */
 
-std::vector<double> log_sigma_priors(prior_params* p) {
-    int m = p->m;
-    std::vector<double> l_prior_vec; 
-    p->l_P_tree = l_P_intree__somatic(m, p->l_P_clonal);
-    for (int sig = 0; sig <= 2*m; sig++) {
-        l_prior_vec.push_back(l_P_sig(m, sig, p));
-    }
-    return l_prior_vec;
-}
 
 long double log_factorial(int x) {
     static int biggest = 0;
@@ -37,6 +24,7 @@ inline long double log_binom(int n, int k) {
 
 }
 
+//Log-sum-exp
 long double LSE(std::vector<long double> to_sum) {
     long double maxv = std::log(static_cast<long double>(0));
     long double sum = 0;
@@ -53,6 +41,7 @@ long double LSE(std::vector<long double> to_sum) {
     return std::log(sum) + maxv;
 }
 
+//Wrapper for two argument case
 inline long double LSE(long double arg1, long double arg2) {
     std::vector<long double> v{arg1, arg2};
     return LSE(v);
@@ -61,6 +50,7 @@ inline long double LSE(long double arg1, long double arg2) {
 /* Mutant Priors */
 
 
+//"T" function in paper
 long double l_T(int a, int b) {
     //Kuipers et al. inspired tree function
     long double numerator = 2 * log_binom(a,b);
@@ -238,9 +228,21 @@ long double l_P_sig__NsSNV(int m, int sig, long double l_mu, long double l_P_H, 
     return LSE(term_1, term_2);
 }
 
-long double l_P_sig(int m, int sig, prior_params* p) {
+long double l_P_sig(int m, int sig, prior_params_t* p) {
     long double l_om_lambda = std::log(1-std::exp(static_cast<long double>(p->l_lambda)));
     long double term_1 = p->l_lambda + l_P_sig__sSNV(m, sig, p->l_P_H, p->l_P_tree);
     long double term_2 = l_om_lambda + l_P_sig__NsSNV(m, sig, p->l_mu, p->l_P_H, p->l_P_tree);
     return LSE(term_1, term_2);
+}
+
+//Function to get overall priors
+std::vector<double> log_sigma_priors(prior_params_t* p) {
+    //FIXME: does not sum to 1 if m=1
+    int m = p->m;
+    std::vector<double> l_prior_vec; 
+    p->l_P_tree = l_P_intree__somatic(m, p->l_P_clonal);
+    for (int sig = 0; sig <= 2*m; sig++) {
+        l_prior_vec.push_back(l_P_sig(m, sig, p));
+    }
+    return l_prior_vec;
 }
