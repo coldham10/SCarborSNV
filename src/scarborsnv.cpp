@@ -16,14 +16,14 @@ int main(int argc, char** argv) {
     Piler* piler;
     if (gp.mp_isfile) {
         std::ifstream ifs(gp.mp_fname, std::ifstream::in);
-        piler = new Piler(ifs);
+        piler = new Piler(&ifs);
     }
     else {
-        piler = new Piler(std::cin);
+        piler = new Piler(&std::cin);
     }
 
 
-
+    delete piler;
     return 0;
 }
 
