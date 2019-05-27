@@ -30,9 +30,7 @@ Batch::~Batch() {
 }
 
 unsigned int Batch::get_batch_size() {
-    //TODO
-    return 0;
-
+    return this->batch_size();
 }
 
 int Batch::get_batch_id() {
