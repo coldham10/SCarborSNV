@@ -13,13 +13,13 @@ int main(int argc, char** argv) {
     global_params_t gp{};
     init_params(&gp, &p0, argc, argv);
 
-    Piler* piler;
+    piler_module::Piler* piler;
     if (gp.mp_isfile) {
         std::ifstream ifs(gp.mp_fname, std::ifstream::in);
-        piler = new Piler(&ifs);
+        piler = new piler_module::Piler(&ifs, gp.n_threads);
     }
     else {
-        piler = new Piler(&std::cin);
+        piler = new piler_module::Piler(&std::cin, gp.n_threads);
     }
 
 

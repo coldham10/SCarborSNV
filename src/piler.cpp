@@ -3,6 +3,7 @@
 #include "scarborsnv.h"
 #include "piler.h"
 
+using namespace piler_module;
 /*********************************
  * Batch methods
  * ******************************/
@@ -30,7 +31,7 @@ Batch::~Batch() {
 }
 
 unsigned int Batch::get_batch_size() {
-    return this->batch_size();
+    return this->batch_size;
 }
 
 int Batch::get_batch_id() {
@@ -51,6 +52,7 @@ Locus_reads* Batch::get_locus(int i) {
 Batch_Q::Batch_Q() {
     this->max_size = -1;
     this->read_complete = false;
+    this->n = 0;
     //std::queue<Batch*> data;
     //TODO initialize
     //std::mutex m_queue;
@@ -87,13 +89,12 @@ Batch_Q::~Batch_Q() {
  * Piler methods
  * ******************************/
 
-Piler::Piler(std::istream* instream, int batch_size, bool is_bams) {
-    //TODO: if_bams?
+Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams) {
     this->batch_size = batch_size;
     this->pileup_stream = instream;
     this->last_batch_id = -1;
     //TODO real queue size
-    //this->batch_queue = Batch_Q(5);
+    this->batch_queue.set_max_size(5);
     //TODO:
     std::string test;
     getline(*instream, test);
@@ -111,14 +112,17 @@ Batch* Piler::get_next_batch() {
     return this->batch_queue.pop();
 }
 
+void Piler::fill_queue() {
+    //TODO
+    return;
+}
+
+
 Piler::~Piler() {
     if (this->pileup_stream != &std::cin) {
         std::ifstream* i =  static_cast<std::ifstream*>(this->pileup_stream);
         i->close();
     }
-    std::string test;
-    getline(std::cin, test);
-    std::cout << test << std::endl;
 }
 
 

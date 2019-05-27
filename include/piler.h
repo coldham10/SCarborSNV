@@ -6,6 +6,8 @@
 #include <queue>
 #include <mutex>
 
+namespace piler_module {
+
 /* All the read and qual data from a single cell at a locus*/
 //TODO when are these allocated and deallocated? Make Locus_reads a class?
 struct Cell_reads {
@@ -61,16 +63,21 @@ class Piler {
     public:
         /* Sets the read stream and starts working to populate batch list
          * */ 
-        Piler(std::istream* instream, int batch_size=1000, bool is_bams=false);
+        Piler(std::istream* instream, int n_threads, int batch_size=1000, bool is_bams=false);
         unsigned int get_batch_size();
         Batch* get_next_batch();
         ~Piler();
 
     private:
+        //Private members
         std::istream* pileup_stream;
         int m_cells;
         unsigned int min_queue_size, max_queue_size, last_batch_id, batch_size;
         Batch_Q batch_queue;
+
+        //Private methods
+        /* Continues to add batches to the queue until full */
+        void fill_queue();
 };
 
 /*Eventually three possible options:
@@ -86,4 +93,5 @@ class Piler {
 //ALSO: in general, how to limit number of threads. If some thread (or many in case of in-house piling) are running in the piler, some in the other workers, how to keep total at t?
 //Some sort of shared n_current threads variable, or even a thread manager class with mutex protected modifiers for this number and methods that can spawn new workers if some available. NOTE: this is for WAAAAY later on
 
+} //end namespace
 #endif
