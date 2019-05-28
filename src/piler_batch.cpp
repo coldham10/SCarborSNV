@@ -8,12 +8,12 @@ using namespace piler_module;
  * Batch methods
  * ******************************/
 
-Batch::Batch(int batch_size, int batch_id) {
+Batch::Batch(unsigned int batch_size, int batch_id) {
     this->batch_id = batch_id;
     this->batch_size = batch_size;
     Locus_reads** data = new Locus_reads*[batch_size]; 
 
-    for (int i=0; i<batch_size; i++) {
+    for (unsigned int i=0; i<batch_size; i++) {
         data[i] = new Locus_reads;
     }
     this->data = data;
@@ -22,7 +22,7 @@ Batch::Batch(int batch_size, int batch_id) {
 }
 
 Batch::~Batch() {
-    for (int i=0; i<this->batch_size; i++) {
+    for (unsigned int i=0; i<this->batch_size; i++) {
         delete this->data[i];
     }
     delete this->data;
@@ -59,7 +59,7 @@ Batch_Q::Batch_Q() {
     //TODO !!!
 }
 
-void Batch_Q::set_max_size(int max_size) {
+void Batch_Q::set_max_size(unsigned int max_size) {
     this->max_size = max_size;
     return;
 }
@@ -79,6 +79,10 @@ void Batch_Q::push(Batch* b){
 unsigned int Batch_Q::size() {
     //TODO mutex lock;
     return this->n;
+}
+
+unsigned int Batch_Q::get_max_size() {
+    return this->max_size;
 }
 
 Batch_Q::~Batch_Q() {

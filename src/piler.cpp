@@ -4,6 +4,7 @@
 #include "piler.h"
 
 using namespace piler_module;
+//TODO is order important? Or do we keep track of chrom and pos?
 
 /*********************************
  * Piler methods
@@ -14,7 +15,7 @@ Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams
     this->pileup_stream = instream;
     this->last_batch_id = -1;
     //TODO real queue size
-    this->batch_queue.set_max_size(5);
+    this->batch_queue.set_max_size(n_threads + 1);
     //TODO:
     std::string test;
     getline(*instream, test);
@@ -33,7 +34,14 @@ Batch* Piler::get_next_batch() {
 }
 
 void Piler::fill_queue() {
-    //TODO
+    std::string line;
+    //FIXME only one pileup stream, how can multiple threads work?
+    //Maybe only multithread if bams. Only one thread can read mpileup stream at a time and thus
+    //only one thread can make batches. Or we just keep track of locus positions, then it doesn't matter if they are in order.
+    while (this->batch_queue.size() < this->batch_queue.get_max_size()) {
+        //Create a batch and add to queue
+
+    }
     return;
 }
 

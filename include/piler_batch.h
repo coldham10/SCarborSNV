@@ -24,7 +24,7 @@ typedef std::vector<Cell_reads> Locus_reads;
 class Batch {
     public:
         /* Allocates memory for the batch*/
-        Batch(int batch_size, int id);
+        Batch(unsigned int batch_size, int id);
         /*Returns size of this batch even if smaller than standard batch size*/
         unsigned int get_batch_size();
         int get_batch_id();
@@ -32,7 +32,8 @@ class Batch {
         ~Batch();
 
     private:
-        int batch_size, batch_id;
+        unsigned int batch_size;
+        int batch_id;
         Locus_reads** data;
 };
 
@@ -40,7 +41,8 @@ class Batch {
 class Batch_Q {
     public:
         Batch_Q();
-        void set_max_size(int max_size);
+        void set_max_size(unsigned int max_size);
+        unsigned int get_max_size();
         /*Returns oldest batch and deletes from queue
          * If empty returns null pointer TODO:(?)*/
         //TODO: mutex protected. If no batch available yet(and !read_complete), what to do? return null? Wait? reader only takes mutex when pushing complete Batch. 

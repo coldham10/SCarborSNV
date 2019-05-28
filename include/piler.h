@@ -9,8 +9,6 @@
 
 namespace piler_module {
 
-
-
 class Piler {
     public:
         /* Sets the read stream and starts working to populate batch list
