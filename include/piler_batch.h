@@ -36,6 +36,7 @@ class Batch {
         unsigned int get_batch_size();
         int get_batch_id();
         Locus_reads* get_locus(int i);
+        void set_locus(int i, Locus_reads* locus);
         ~Batch();
 
     private:
@@ -62,7 +63,7 @@ class Batch_Q {
         unsigned int max_size, n;
         bool read_complete;
         std::queue<Batch*> batch_queue;
-        //TODO initialize
+        //TODO initialize, use lock?
         std::mutex m_queue;
 };
 

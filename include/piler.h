@@ -21,8 +21,15 @@ class Piler {
         int m_cells;
         unsigned int min_queue_size, max_queue_size, last_batch_id, batch_size;
         Batch_Q batch_queue;
+        bool f_active;
 
         //Private methods
+        /*Checks against f_active to see if the current thread can start filling batches.
+         * If sucsessful (f_active was false) it sets f_active to true and returns true.
+         * Else returns false. TODO */
+        bool can_fill();
+        /*TODO spawns a worker and begins filling queue if possible*/
+        void try_fill_queue();
         /* Continues to add batches to the queue until full */
         void fill_queue();
         Batch* make_batch();

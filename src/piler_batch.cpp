@@ -38,22 +38,7 @@ Locus_reads::~Locus_reads() {
 Batch::Batch(unsigned int batch_size, int batch_id) {
     this->batch_id = batch_id;
     this->batch_size = batch_size;
-    Locus_reads** data = new Locus_reads*[batch_size]; 
-
-    //FIXME is this necessary
-    //for (unsigned int i=0; i<batch_size; i++) {
-    //    data[i] = new Locus_reads;
-    //}
-    this->data = data;
-
-    return;
-}
-
-Batch::~Batch() {
-    for (unsigned int i=0; i<this->batch_size; i++) {
-        delete this->data[i];
-    }
-    delete this->data;
+    this->data = new Locus_reads*[batch_size]; 
 
     return;
 }
@@ -71,6 +56,19 @@ int Batch::get_batch_id() {
 Locus_reads* Batch::get_locus(int i) {
     //TODO
     return (Locus_reads*)NULL;
+}
+
+void Batch::set_locus(int i, Locus_reads* locus) {
+    this->data[i] = locus;
+}
+
+Batch::~Batch() {
+    for (unsigned int i=0; i<this->batch_size; i++) {
+        delete[] this->data[i];
+    }
+    delete this->data;
+
+    return;
 }
 
 /*********************************
