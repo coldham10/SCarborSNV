@@ -2,6 +2,7 @@
 #define SCARBORSNV_H_
 
 typedef char nuc_t;
+
 typedef struct {
     long double l_err;
     nuc_t base;
@@ -11,6 +12,7 @@ static const nuc_t A = 0;
 static const nuc_t C = 1;
 static const nuc_t G = 2;
 static const nuc_t T = 3;
+static const nuc_t INVALID_NUC = 4;
 
 typedef struct {
     unsigned int n_threads;

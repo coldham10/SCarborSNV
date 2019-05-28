@@ -2,9 +2,6 @@
 #define PILER_H_
 
 #include <iostream>
-#include <vector>
-#include <queue>
-#include <mutex>
 #include "piler_batch.h"
 
 namespace piler_module {
@@ -28,6 +25,9 @@ class Piler {
         //Private methods
         /* Continues to add batches to the queue until full */
         void fill_queue();
+        Batch* make_batch();
+        //TODO is this necessary? Just call delete?
+        void delete_batch(Batch* batch);
 };
 
 /*Eventually three possible options:

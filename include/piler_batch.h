@@ -1,22 +1,29 @@
 #ifndef PILER_BATCH_H_
 #define PILER_BATCH_H_
 
-#include <iostream>
 #include <vector>
 #include <queue>
 #include <mutex>
+#include "scarborsnv.h"
 
 namespace piler_module {
 
 /* All the read and qual data from a single cell at a locus*/
-//TODO when are these allocated and deallocated? Make Locus_reads a class?
-struct Cell_reads {
-    std::vector<read> reads;
-    int n_reads;
-    nuc_t ref;
-};
+class Locus_reads {
+    public:
+        Locus_reads(std::string chrom, unsigned int pos, nuc_t ref, int n_cells);
+        void add_cell(int n_reads, read* cell_reads);
+        ~Locus_reads();
 
-typedef std::vector<Cell_reads> Locus_reads;
+
+    private:
+        std::string chrom;
+        unsigned int pos;
+        int n_cells, last_cell;
+        nuc_t ref;
+        //read defined in scarborsnv.h
+        read** reads;
+};
 
 /* A batch of 'batch_size' loci with the reads of each cell at those loci.
  * Note Batches get made and analyzed by single threads so don't need mutexes

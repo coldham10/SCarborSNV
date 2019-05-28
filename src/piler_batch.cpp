@@ -5,6 +5,33 @@
 
 using namespace piler_module;
 /*********************************
+ * Locus_reads methods
+ * ******************************/
+Locus_reads::Locus_reads(std::string chrom, unsigned int pos, nuc_t ref, int n_cells) {
+    this->chrom = chrom;
+    this->pos = pos;
+    this->ref = ref;
+    this->n_cells = n_cells;
+    this->last_cell = -1;
+    this->reads = new read*[n_cells];
+    return;
+}
+
+void Locus_reads::add_cell(int n_reads, read* cell_reads) {
+    //cell_reads should already be dynamically allocated by here
+    this->reads[++last_cell] = cell_reads;
+    return;
+}
+
+Locus_reads::~Locus_reads() {
+    for (int i=0; i<this->n_cells; i++) {
+        delete[] this->reads[i];
+    }
+    delete[] this->reads;
+    return;
+}
+
+/*********************************
  * Batch methods
  * ******************************/
 
@@ -13,9 +40,10 @@ Batch::Batch(unsigned int batch_size, int batch_id) {
     this->batch_size = batch_size;
     Locus_reads** data = new Locus_reads*[batch_size]; 
 
-    for (unsigned int i=0; i<batch_size; i++) {
-        data[i] = new Locus_reads;
-    }
+    //FIXME is this necessary
+    //for (unsigned int i=0; i<batch_size; i++) {
+    //    data[i] = new Locus_reads;
+    //}
     this->data = data;
 
     return;
