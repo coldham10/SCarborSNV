@@ -1,36 +1,11 @@
 #include <iostream>
 #include <fstream>
 #include "scarborsnv.h"
+#include "piler_batch.h"
+#include "piler_locus.h"
 #include "piler.h"
 
 using namespace piler_module;
-/*********************************
- * Locus_reads methods
- * ******************************/
-Locus_reads::Locus_reads(std::string chrom, unsigned int pos, nuc_t ref, int n_cells) {
-    this->chrom = chrom;
-    this->pos = pos;
-    this->ref = ref;
-    this->n_cells = n_cells;
-    this->last_cell = -1;
-    this->reads = new read*[n_cells];
-    return;
-}
-
-void Locus_reads::add_cell(int n_reads, read* cell_reads) {
-    //cell_reads should already be dynamically allocated by here
-    this->reads[++last_cell] = cell_reads;
-    return;
-}
-
-Locus_reads::~Locus_reads() {
-    for (int i=0; i<this->n_cells; i++) {
-        delete[] this->reads[i];
-    }
-    delete[] this->reads;
-    return;
-}
-
 /*********************************
  * Batch methods
  * ******************************/
@@ -38,7 +13,7 @@ Locus_reads::~Locus_reads() {
 Batch::Batch(unsigned int batch_size, int batch_id) {
     this->batch_id = batch_id;
     this->batch_size = batch_size;
-    this->data = new Locus_reads*[batch_size]; 
+    this->data = new Locus*[batch_size]; 
 
     return;
 }
@@ -53,12 +28,11 @@ int Batch::get_batch_id() {
 
 }
 
-Locus_reads* Batch::get_locus(int i) {
-    //TODO
-    return (Locus_reads*)NULL;
+Locus* Batch::get_locus(int i) {
+    return this->data[i];
 }
 
-void Batch::set_locus(int i, Locus_reads* locus) {
+void Batch::set_locus(int i, Locus* locus) {
     this->data[i] = locus;
 }
 

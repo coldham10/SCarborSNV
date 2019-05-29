@@ -24,7 +24,9 @@ Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams
     //getline(*instream, test);
     //std::cout << test << std::endl;
     Batch* test = this->make_batch();
-    test->get_batch_id();
+    Locus* t2 = test->get_locus(0);
+    read* t3 = t2->get_cell(0);
+    printf("%d", static_cast<int>(t3->base));
     delete test;
 }
 
@@ -72,7 +74,7 @@ Batch* Piler::make_batch() {
         //Three fields per cell + 3 fields for whole locus
         int n_cells = (tokens.size()/3) -1;
         nuc_t ref = sequence_utils::decode_nucleotide(tokens[2].front());
-        Locus_reads* locus = new Locus_reads(chrom, pos, ref, n_cells);
+        Locus* locus = new Locus(chrom, pos, ref, n_cells);
 
         int depth;
         std::string read_string, qual_string;
@@ -81,8 +83,8 @@ Batch* Piler::make_batch() {
             read_string = tokens[3 + 3*j + 1];
             qual_string = tokens[3 + 3*j + 2];
 
-            read* reads = new read[depth];
-            sequence_utils::clean_fill(reads, depth, ref, read_string, qual_string);
+            locus->set_cell(j, new read[depth]);
+            sequence_utils::clean_fill(locus->get_cell(j), depth, ref, read_string, qual_string);
         }
         batch->set_locus(i, locus);
     }
