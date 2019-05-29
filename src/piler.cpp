@@ -16,7 +16,7 @@ using namespace piler_module;
 Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams) {
     this->batch_size = batch_size;
     //FIXME:
-    this->batch_size = 2;
+    this->batch_size = 40;
     this->pileup_stream = instream;
     this->last_batch_id = -1;
     this->batch_queue.set_max_size(n_threads + 1);

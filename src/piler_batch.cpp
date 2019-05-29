@@ -41,7 +41,7 @@ Batch::~Batch() {
         //Locus*
         delete this->data[i];
     }
-    delete this->data;
+    delete[] this->data;
 
     return;
 }
