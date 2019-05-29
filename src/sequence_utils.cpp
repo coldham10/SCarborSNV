@@ -45,18 +45,37 @@ void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::s
             continue;
         }
         //End segment
-        else if (*read_it == '&') {
-            read_it ++;
+        else if (*read_it == '$') {
+            read_it++;
             i--;
             continue;
+        }
+        //Indel
+        else if (*read_it == '+' || *read_it == '-') {
+            //Number after +/- is indel length
+            std::string num_str;
+            while ('0' <= *(++read_it) && *read_it <= '9') {
+                num_str.append(*read_it, 1);
+            }
+            int n = stoi(num_str);
+            //Indel reads are next, skipping to next non-indel
+            read_it += n;
+            //TODO test this
+            continue;
+
         }
         else {
             to_fill[i].base     = sequence_utils::decode_nucleotide(*(read_it++), ref);
             to_fill[i].l_err    = sequence_utils::char2l_err(*(qual_it++));
         }
     }
-    if (read_it != read_string.end() || qual_it != qual_string.end()) {
-        throw std::runtime_error("Read string, qual string and depth don't all agree");
+    if (qual_it != qual_string.end() || read_it != read_string.end()) {
+        //Could have characters beyond final valid read if indel or sequence markers
+        if (*read_it == '$' || *read_it == '^' || *read_it == '+' || *read_it == '-') return;
+        std::string err = "Read string, qual string and depth don't all agree\n";
+        err.append("Reads: " + read_string + "\n");
+        err.append("Quals: " + qual_string + "\n");
+        throw std::runtime_error(err);
     }
     return;
 }

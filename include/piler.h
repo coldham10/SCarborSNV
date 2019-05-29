@@ -12,6 +12,7 @@ class Piler {
          * */ 
         Piler(std::istream* instream, int n_threads, int batch_size=1000, bool is_bams=false);
         unsigned int get_batch_size();
+        /*Returns null if no batches left*/
         Batch* get_next_batch();
         ~Piler();
 

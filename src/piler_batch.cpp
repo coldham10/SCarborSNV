@@ -36,6 +36,19 @@ void Batch::set_locus(int i, Locus* locus) {
     this->data[i] = locus;
 }
 
+void Batch::resize(unsigned int new_size) {
+    Locus** new_data = new Locus*[new_size];
+    //The Loci beyond have not yet been allocated, no need to delete just set new array to point at existing loci
+    for (unsigned int i=0; i< new_size; i++) {
+        new_data[i] = this->data[i];
+    }
+    delete[] this->data;
+    this->data = new_data;
+    this->batch_size = new_size;
+    return;
+}
+
+
 Batch::~Batch() {
     for (unsigned int i=0; i<this->batch_size; i++) {
         //Locus*

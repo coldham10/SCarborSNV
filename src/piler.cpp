@@ -16,7 +16,7 @@ using namespace piler_module;
 Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams) {
     this->batch_size = batch_size;
     //FIXME:
-    this->batch_size = 40;
+    this->batch_size = 200;
     this->pileup_stream = instream;
     this->last_batch_id = -1;
     this->batch_queue.set_max_size(n_threads + 1);
@@ -58,6 +58,14 @@ Batch* Piler::make_batch() {
         std::string line;
         getline(*(this->pileup_stream), line);
 
+        if (line.empty()) {
+            //FIXME If is bams and no piles ready yet, would getline return empty?
+            //We do not want to resize the batch in this case
+            //TODO indicate to Piler the EOF
+            batch->resize(i+1);
+            return batch;
+        }
+
         std::vector<std::string> tokens;
         std::stringstream linestream(line);
         std::string token;
@@ -91,8 +99,9 @@ Batch* Piler::make_batch() {
 }
 
 void Piler::fill_queue() {
-    std::string line;
     while (this->batch_queue.size() < this->batch_queue.get_max_size()) {
+        Batch* b = this->make_batch();
+        this->batch_queue.push(b);
         //Create a batch and add to queue
 
 

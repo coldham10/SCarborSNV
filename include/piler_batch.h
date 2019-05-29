@@ -14,12 +14,13 @@ namespace piler_module {
 class Batch {
     public:
         /* Allocates memory for the batch*/
-        Batch(unsigned int batch_size, int id);
+        Batch(unsigned int batch_size=0, int id=0);
         /*Returns size of this batch even if smaller than standard batch size*/
         unsigned int get_batch_size();
         int get_batch_id();
         Locus* get_locus(int i);
         void set_locus(int i, Locus* locus);
+        void resize(unsigned int new_size);
         ~Batch();
 
     private:
