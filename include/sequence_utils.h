@@ -14,7 +14,7 @@ static const long double phred_multiplier = -1/(10 * log10l(expl(1)));
 nuc_t decode_nucleotide(char encoded, nuc_t ref=INVALID_NUC);
 
 /* Converts a pileup quality character to a log error */
-long double char2l_err(char c);
+long double char2l_err(char& c);
 
 /* Converts raw pileup read and qual strings into an array of read structs */
 void clean_fill(read* to_fill, int read_depth, nuc_t ref, std::string read_string, std::string qual_string);

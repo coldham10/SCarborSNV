@@ -1,21 +1,24 @@
 #ifndef PILER_LOCUS_H_
 #define PILER_LOCUS_H_
 
+#include <string>
 #include "scarborsnv.h"
 
 namespace piler_module {
 
-class Cell {
-
+/* A single cell at a locus */
+struct Cell {
+    int depth;
+    //read defined in scarborsnv.h
+    read* reads;
 };
 
-/* All the read and qual data from a single cell at a locus*/
 class Locus {
     public:
         Locus(std::string chrom, unsigned int pos, nuc_t ref, int n_cells);
-        void add_cell(int n_reads, read* cell_reads);
-        read* get_cell(int i);
-        void set_cell(int i, read* cell);
+        void add_cell(int depth, std::string read_string, std::string qual_string);
+        Cell* get_cell(int i);
+        //void set_cell(int i, Cell* cell);
         ~Locus();
 
 
@@ -24,8 +27,7 @@ class Locus {
         unsigned int pos;
         int n_cells, last_cell;
         nuc_t ref;
-        //read defined in scarborsnv.h
-        read** reads;
+        Cell* cells;
 };
 
 } //end namespace

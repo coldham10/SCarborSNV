@@ -38,7 +38,8 @@ void Batch::set_locus(int i, Locus* locus) {
 
 Batch::~Batch() {
     for (unsigned int i=0; i<this->batch_size; i++) {
-        delete[] this->data[i];
+        //Locus*
+        delete this->data[i];
     }
     delete this->data;
 

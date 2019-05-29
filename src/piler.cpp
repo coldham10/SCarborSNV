@@ -3,6 +3,7 @@
 #include <sstream>
 #include "scarborsnv.h"
 #include "piler.h"
+#include "piler_locus.h"
 #include "sequence_utils.h"
 
 using namespace piler_module;
@@ -19,14 +20,11 @@ Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams
     this->pileup_stream = instream;
     this->last_batch_id = -1;
     this->batch_queue.set_max_size(n_threads + 1);
-    //TODO:
-    //std::string test;
-    //getline(*instream, test);
-    //std::cout << test << std::endl;
     Batch* test = this->make_batch();
     Locus* t2 = test->get_locus(0);
-    read* t3 = t2->get_cell(0);
-    printf("%d", static_cast<int>(t3->base));
+    Cell* t3 = t2->get_cell(1);
+    printf("base is %d\n", static_cast<int>(t3->reads[1].base));
+    //TODO
     delete test;
 }
 
@@ -83,8 +81,8 @@ Batch* Piler::make_batch() {
             read_string = tokens[3 + 3*j + 1];
             qual_string = tokens[3 + 3*j + 2];
 
-            locus->set_cell(j, new read[depth]);
-            sequence_utils::clean_fill(locus->get_cell(j), depth, ref, read_string, qual_string);
+            locus->add_cell(depth, read_string, qual_string);
+            //sequence_utils::clean_fill(locus->get_cell(j), depth, ref, read_string, qual_string);
         }
         batch->set_locus(i, locus);
     }

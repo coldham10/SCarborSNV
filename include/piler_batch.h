@@ -25,6 +25,7 @@ class Batch {
     private:
         unsigned int batch_size;
         int batch_id;
+        //Array of Locus*s. TODO why not array of Loci themselves?
         Locus** data;
 };
 

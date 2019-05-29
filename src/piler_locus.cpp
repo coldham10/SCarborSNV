@@ -2,6 +2,7 @@
 #include <fstream>
 #include "scarborsnv.h"
 #include "piler.h"
+#include "sequence_utils.h"
 
 using namespace piler_module;
 /*********************************
@@ -13,31 +14,30 @@ Locus::Locus(std::string chrom, unsigned int pos, nuc_t ref, int n_cells) {
     this->ref = ref;
     this->n_cells = n_cells;
     this->last_cell = -1;
-    this->reads = new read*[n_cells];
+    this->cells = new Cell[n_cells];
     return;
 }
 
-void Locus::add_cell(int n_reads, read* cell_reads) {
-    //cell_reads should already be dynamically allocated by here
-    int pos = this->last_cell = this->last_cell +1;
-    this->reads[pos] = cell_reads;
+void Locus::add_cell(int depth, std::string read_string, std::string qual_string) {
+    //Cells should already be dynamically allocated by constructor
+    //Read array in Cell allocated here?
+    int cell_id = this->last_cell = this->last_cell +1;
+    Cell* c = this->get_cell(cell_id);
+    c->depth = depth;
+    c->reads = new read[depth];
+    sequence_utils::clean_fill(c->reads, depth, this->ref, read_string, qual_string);
     return;
 }
 
-read* Locus::get_cell(int i) {
-    return this->reads[i];
-}
-
-void Locus::set_cell(int i, read* cell) {
-    this->reads[i] = cell;
-    return;
+Cell* Locus::get_cell(int i) {
+    return (this->cells) + i;
 }
 
 Locus::~Locus() {
     for (int i=0; i<this->n_cells; i++) {
-        delete[] this->reads[i];
+        delete[] this->cells[i].reads;
     }
-    delete[] this->reads;
+    delete[] this->cells;
     return;
 }
 
