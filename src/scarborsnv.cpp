@@ -16,10 +16,10 @@ int main(int argc, char** argv) {
     piler_module::Piler* piler;
     if (gp.mp_isfile) {
         std::ifstream ifs(gp.mp_fname, std::ifstream::in);
-        piler = new piler_module::Piler(&ifs, false, gp.m, gp.n_threads);
+        piler = new piler_module::Piler(&ifs, false, gp.m, gp.n_threads, 10, false);
     }
     else {
-        piler = new piler_module::Piler(&std::cin, true, gp.m, gp.n_threads);
+        piler = new piler_module::Piler(&std::cin, true, gp.m, gp.n_threads, 10, false);
     }
     piler_module::Batch* batch = piler->get_next_batch();
     while ( batch != NULL) {

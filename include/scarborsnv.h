@@ -13,6 +13,8 @@ static const nuc_t C = 1;
 static const nuc_t G = 2;
 static const nuc_t T = 3;
 static const nuc_t INVALID_NUC = 4;
+static const nuc_t DELETED_NUC = 5;
+static const nuc_t UNKNOWN_NUC = 6; //For 'N' bases in pileup data
 
 typedef struct {
     unsigned int n_threads;

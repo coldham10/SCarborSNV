@@ -2,7 +2,7 @@
 #include "sequence_utils.h"
 
 nuc_t sequence_utils::decode_nucleotide(char encoded, nuc_t ref) {
-    char ret;
+    nuc_t ret = INVALID_NUC;
     switch(encoded) {
         case 'A' :
         case 'a' : ret = A;
@@ -19,9 +19,33 @@ nuc_t sequence_utils::decode_nucleotide(char encoded, nuc_t ref) {
         case '.' :
         case ',' : ret = ref;
         break;
+        case '*' : ret = DELETED_NUC;
+        break;
+        case 'N' :
+        case 'n' : ret = UNKNOWN_NUC;
+        break;
+
     }
     if (ret == INVALID_NUC) {
         throw std::invalid_argument("Encoded reference (ACGT). Either no reference was passed or the reference was invalid.");
+    }
+    return ret;
+}
+
+nuc_t sequence_utils::decode_ref(char encoded) {
+    nuc_t ret = INVALID_NUC;
+    switch(encoded) {
+        case 'A': ret = A;
+        break;
+        case 'C': ret = C;
+        break;
+        case 'G': ret = G;
+        break;
+        case 'T': ret = T;
+        break;
+    }
+    if (ret == INVALID_NUC) {
+        throw std::invalid_argument("Encoded reference must be (ACGT). Got: "+ encoded); 
     }
     return ret;
 }
@@ -35,8 +59,6 @@ void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::s
     if (read_depth == 0) return;
     std::string::iterator read_it = read_string.begin();
     std::string::iterator qual_it = qual_string.begin();
-    //int i = 0;
-    //while (read_it != read_string.end() && qual_it != qual_string.end()) {
     for (int i=0; i<read_depth; i++) {
         //Start segment + mapping quality
         if (*read_it == '^') {
@@ -53,14 +75,23 @@ void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::s
         //Indel
         else if (*read_it == '+' || *read_it == '-') {
             //Number after +/- is indel length
-            std::string num_str;
-            while ('0' <= *(++read_it) && *read_it <= '9') {
-                num_str.append(*read_it, 1);
+            std::string num_str = "";
+            read_it++;
+            while ('0' <= *read_it && *read_it <= '9') {
+                num_str.append(1, *read_it);
+                read_it++;
             }
-            int n = stoi(num_str);
+            int n = 0;
+            try {
+                n = stoi(num_str);
+            }
+            catch (...) {
+                throw std::runtime_error("Expected number after indel, got: " + num_str + " (" + std::to_string(num_str.length()) + ")\n");
+            }
             //Indel reads are next, skipping to next non-indel
             read_it += n;
             //TODO test this
+            i--;
             continue;
 
         }
@@ -71,7 +102,7 @@ void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::s
     }
     if (qual_it != qual_string.end() || read_it != read_string.end()) {
         //Could have characters beyond final valid read if indel or sequence markers
-        if (*read_it == '$' || *read_it == '^' || *read_it == '+' || *read_it == '-') return;
+        if (*read_it == '$' || *read_it == '^') return;
         std::string err = "Read string, qual string and depth don't all agree\n";
         err.append("Reads: " + read_string + "\n");
         err.append("Quals: " + qual_string + "\n");

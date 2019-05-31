@@ -11,7 +11,8 @@ namespace sequence_utils {
 static const long double phred_multiplier = -1/(10 * log10l(expl(1)));
 
 /* Turns chars 'A' etc into the corresponding nuc_t*/
-nuc_t decode_nucleotide(char encoded, nuc_t ref=INVALID_NUC);
+nuc_t decode_nucleotide(char encoded, nuc_t ref);
+nuc_t decode_ref(char encoded);
 
 /* Converts a pileup quality character to a log error */
 long double char2l_err(char& c);
