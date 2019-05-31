@@ -1,0 +1,48 @@
+In file included from src/piler_batch.cpp:4:0:
+include/scarborsnv.h:9:3: error: ‘typedef struct read read’ redeclared as different kind of symbol
+ } read;
+   ^~~~
+In file included from src/piler_batch.cpp:3:0:
+/usr/include/unistd.h:363:16: note: previous declaration ‘ssize_t read(int, void*, size_t)’
+ extern ssize_t read (int __fd, void *__buf, size_t __nbytes) __wur;
+                ^~~~
+In file included from include/piler_batch.h:7:0,
+                 from src/piler_batch.cpp:5:
+include/piler_locus.h:13:5: error: ‘read’ does not name a type
+     read* reads;
+     ^~~~
+src/piler_batch.cpp: In member function ‘piler_module::Batch* piler_module::Batch_Q::pop()’:
+src/piler_batch.cpp:81:24: error: no matching function for call to ‘lock(std::unique_lock<std::mutex>&)’
+         std::lock(lock1);
+                        ^
+In file included from include/piler_batch.h:5:0,
+                 from src/piler_batch.cpp:5:
+/usr/include/c++/7/mutex:542:5: note: candidate: template<class _L1, class _L2, class ... _L3> void std::lock(_L1&, _L2&, _L3& ...)
+     lock(_L1& __l1, _L2& __l2, _L3&... __l3)
+     ^~~~
+/usr/include/c++/7/mutex:542:5: note:   template argument deduction/substitution failed:
+src/piler_batch.cpp:81:24: note:   candidate expects at least 2 arguments, 1 provided
+         std::lock(lock1);
+                        ^
+src/piler_batch.cpp:84:18: error: ‘unlock’ is not a member of ‘std’
+             std::unlock(lock1);
+                  ^~~~~~
+src/piler_batch.cpp:84:18: note: suggested alternative: ‘lock’
+             std::unlock(lock1);
+                  ^~~~~~
+                  lock
+src/piler_batch.cpp:88:18: error: ‘unlock’ is not a member of ‘std’
+             std::unlock(lock1);
+                  ^~~~~~
+src/piler_batch.cpp:88:18: note: suggested alternative: ‘lock’
+             std::unlock(lock1);
+                  ^~~~~~
+                  lock
+src/piler_batch.cpp:96:18: error: ‘unlock’ is not a member of ‘std’
+             std::unlock(lock1);
+                  ^~~~~~
+src/piler_batch.cpp:96:18: note: suggested alternative: ‘lock’
+             std::unlock(lock1);
+                  ^~~~~~
+                  lock
+make: *** [obj/piler_batch.o] Error 1

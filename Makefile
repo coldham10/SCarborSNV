@@ -7,10 +7,10 @@ SRC = $(wildcard $(SRC_DIR)/*.cpp)
 OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 CXX = g++
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -g -std=c++11
 PPFLAGS = -Iinclude
 LDFLAGS = -Llib
-LDLIBS = -lhts
+LDLIBS = -lhts -lpthread
 
 all: $(EXE)
 

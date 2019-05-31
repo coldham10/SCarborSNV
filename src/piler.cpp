@@ -1,47 +1,49 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <thread>
 #include "scarborsnv.h"
 #include "piler.h"
 #include "piler_locus.h"
 #include "sequence_utils.h"
 
 using namespace piler_module;
-//TODO is order important? Or do we keep track of chrom and pos?
-
 /*********************************
  * Public Piler methods
  * ******************************/
 
-Piler::Piler(std::istream* instream, int n_threads, int batch_size, bool is_bams) {
+//FIXME does not work for files (spurious blank lines)
+Piler::Piler(std::istream* instream, bool is_stdin, int n_cells, int n_threads, int batch_size, bool is_bams) {
     this->batch_size = batch_size;
-    //FIXME:
-    this->batch_size = 200;
+    //XXX
+    this->batch_size = 10;
     this->pileup_stream = instream;
+    this->is_stdin = is_stdin;
+    this->n_cells = n_cells;
     this->last_batch_id = -1;
+    this->pileup_complete = false; //this->batch_queue.pileup_complete;
     this->batch_queue.set_max_size(n_threads + 1);
-    Batch* test = this->make_batch();
-    Locus* t2 = test->get_locus(0);
-    Cell* t3 = t2->get_cell(1);
-    printf("base is %d\n", static_cast<int>(t3->reads[1].base));
-    //TODO
-    delete test;
+    
+    this->try_fill_queue();
 }
 
 unsigned int Piler::get_batch_size() {
     return this->batch_size;
 }
 
+int Piler::get_n_batches() {
+    return this->batch_queue.size();
+}
+
 Batch* Piler::get_next_batch() {
-    if (this->batch_queue.size() < this->min_queue_size) {
-        //TODO: split off a worker to do this!:
-        this->fill_queue();
+    if (this->batch_queue.size() < this->batch_queue.get_max_size()) {
+        this->try_fill_queue();
     }
-    return this->batch_queue.pop();
+    return (this->batch_queue.size() == 0) ? NULL : this->batch_queue.pop();
 }
 
 Piler::~Piler() {
-    if (this->pileup_stream != &std::cin) {
+    if (!this->is_stdin) {
         std::ifstream* i =  static_cast<std::ifstream*>(this->pileup_stream);
         i->close();
     }
@@ -51,18 +53,62 @@ Piler::~Piler() {
  * Private Piler methods
  * ******************************/
 
+bool Piler::can_fill() {
+    std::lock_guard<std::mutex> lock(this->f_active_mutex);
+    if (this->f_active || this->pileup_complete) {
+        return false;
+    }
+    else {
+        this->f_active = true;
+        //Caller can begin filling queue
+        return true;
+    }
+}
+
+void Piler::filler_done() {
+    std::lock_guard<std::mutex> lock(this->f_active_mutex);
+    this->f_active = false;
+}
+
+
+void Piler::try_fill_queue() {
+    //NB checking can_fill() can change f_active
+    if (this->batch_queue.size() < this->batch_queue.get_max_size() && this->can_fill()) {
+        //FIXME should be done with a separate thread. Detached or somehow join()
+        //this->current_filler = new std::thread(&Piler::fill_queue, this);
+        this->fill_queue();
+
+    }
+    return;
+}
+
+void Piler::fill_queue() {
+    //Only callable from try_fill_queue
+    while (this->batch_queue.size() < this->batch_queue.get_max_size() && !this->pileup_complete) {
+        Batch* b = this->make_batch();
+        this->batch_queue.push(b);
+    }
+    this->filler_done();
+    return;
+}
+
+
+
 Batch* Piler::make_batch() {
     Batch* batch = new Batch(this->batch_size, ++(this->last_batch_id));
     //Iterate over loci/pileup lines
     for (unsigned int i=0; i < this->batch_size; i++) {
         std::string line;
         getline(*(this->pileup_stream), line);
+        //std::cout << line << std::endl;
 
         if (line.empty()) {
             //FIXME If is bams and no piles ready yet, would getline return empty?
             //We do not want to resize the batch in this case
             //TODO indicate to Piler the EOF
             batch->resize(i+1);
+            this->pileup_complete = true;
+            //TODO send message to batch_Q
             return batch;
         }
 
@@ -77,10 +123,8 @@ Batch* Piler::make_batch() {
         std::string chrom = tokens[0];
         //TODO test on overflowing ints
         unsigned int pos = static_cast<unsigned int>(std::stoll(tokens[1]));
-        //Three fields per cell + 3 fields for whole locus
-        int n_cells = (tokens.size()/3) -1;
         nuc_t ref = sequence_utils::decode_nucleotide(tokens[2].front());
-        Locus* locus = new Locus(chrom, pos, ref, n_cells);
+        Locus* locus = new Locus(chrom, pos, ref, this->n_cells);
 
         int depth;
         std::string read_string, qual_string;
@@ -97,18 +141,5 @@ Batch* Piler::make_batch() {
     return batch;
 
 }
-
-void Piler::fill_queue() {
-    while (this->batch_queue.size() < this->batch_queue.get_max_size()) {
-        Batch* b = this->make_batch();
-        this->batch_queue.push(b);
-        //Create a batch and add to queue
-
-
-    }
-    return;
-}
-
-
 
 

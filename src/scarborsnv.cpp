@@ -16,10 +16,16 @@ int main(int argc, char** argv) {
     piler_module::Piler* piler;
     if (gp.mp_isfile) {
         std::ifstream ifs(gp.mp_fname, std::ifstream::in);
-        piler = new piler_module::Piler(&ifs, gp.n_threads);
+        piler = new piler_module::Piler(&ifs, false, gp.m, gp.n_threads);
     }
     else {
-        piler = new piler_module::Piler(&std::cin, gp.n_threads);
+        piler = new piler_module::Piler(&std::cin, true, gp.m, gp.n_threads);
+    }
+    piler_module::Batch* batch = piler->get_next_batch();
+    while ( batch != NULL) {
+        std::cout << "got batch, " << piler->get_n_batches() << " left." << std::endl;
+        delete batch;
+        batch = piler->get_next_batch();
     }
 
 
@@ -30,6 +36,7 @@ int main(int argc, char** argv) {
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv) {
     //Default values
     unsigned int n_threads = 1;
+    int m_cells = 1;
     std::string mp_fname = "";
     bool mp_isfile = false;
     double lambda0 = 0.0001; //0.01;
@@ -41,14 +48,15 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     //TODO: handle getting bams
     static struct option prior_options[] = {
         {"lambda", required_argument, NULL, 'l'},
-        {"mu", required_argument, NULL, 'm'},
+        {"mu", required_argument, NULL, 'u'},
         {"p_haploid", required_argument, NULL, 'h'},
         {"p_clonal", required_argument, NULL, 'c'},
-        {"pileup-file", required_argument, NULL, 'p'}
+        {"pileup-file", required_argument, NULL, 'p'},
+        {"n-cells", required_argument, NULL, 'm'}
     };
 
     int c, opt_idx = 0;
-    while ((c = getopt_long(argc, argv, "t:p:", prior_options, &opt_idx) )!= -1 ) {
+    while ((c = getopt_long(argc, argv, "t:p:m:", prior_options, &opt_idx) )!= -1 ) {
 
         switch(c) {
             case 't':
@@ -62,7 +70,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
             case 'l':
                 lambda0 = atof(optarg);
                 break;
-            case 'm':
+            case 'u':
                 mu0 = atof(optarg);
                 break;
             case 'h':
@@ -71,6 +79,9 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
             case 'c':
                 P_clonal0 = atof(optarg);
                 break;
+            case 'm':
+                m_cells = atoi(optarg);
+                break;
         }
     }
            
@@ -78,13 +89,12 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     gp->n_threads   = n_threads;
     gp->mp_isfile   = mp_isfile;
     gp->mp_fname    = mp_fname;
+    gp->m           = m_cells;
 
     //Convert prior params to log space, populate intial parameters struct
     p0->l_lambda    = std::log(lambda0);
     p0->l_mu        = std::log(mu0);
     p0->l_P_H       = std::log(P_H0);
     p0->l_P_clonal  = std::log(P_clonal0);
-    //FIXME a hack to insert m
-    p0->m = n_threads;
 }
 

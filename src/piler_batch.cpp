@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <thread>
+#include <chrono>
 #include "scarborsnv.h"
 #include "piler_batch.h"
 #include "piler_locus.h"
@@ -23,8 +25,7 @@ unsigned int Batch::get_batch_size() {
 }
 
 int Batch::get_batch_id() {
-    //TODO
-    return 0;
+    return this->batch_id;
 
 }
 
@@ -65,12 +66,7 @@ Batch::~Batch() {
 
 Batch_Q::Batch_Q() {
     this->max_size = -1;
-    this->read_complete = false;
-    this->n = 0;
-    //std::queue<Batch*> data;
-    //TODO initialize
-    //std::mutex m_queue;
-    //TODO !!!
+    this->pileup_complete = false;
 }
 
 void Batch_Q::set_max_size(unsigned int max_size) {
@@ -79,20 +75,40 @@ void Batch_Q::set_max_size(unsigned int max_size) {
 }
 
 Batch* Batch_Q::pop() {
-    //TODO !!!
-        /*Returns oldest batch and deletes from queue
-         * If empty returns null pointer TODO:(?)*/
-        //TODO: mutex protected. If no batch available yet(and !read_complete), what to do? return null? Wait? reader only takes mutex when pushing complete Batch. 
-    return (Batch*) NULL;
+    //TODO TESTME
+    std::unique_lock<std::mutex> lock1(this->queue_mutex, std::defer_lock);
+    Batch* batch;
+    while (true) {
+        lock1.lock();
+        //Queue is empty but more on the way, wait
+        if (this->batch_queue.empty() && !this->pileup_complete) {
+            lock1.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+        else if (this->batch_queue.empty() && this->pileup_complete) {
+            lock1.unlock();
+            batch = NULL;
+            break;
+        }
+        //Queue not empty
+        else {
+            batch = this->batch_queue.front();
+            this->batch_queue.pop();
+            lock1.unlock();
+            break;
+        }
+    }
+    return batch;
 }
 
 void Batch_Q::push(Batch* b){
-    //TODO
+    std::lock_guard<std::mutex> lock1(this->queue_mutex);
+    this->batch_queue.push(b);
 }
 
 unsigned int Batch_Q::size() {
-    //TODO mutex lock;
-    return this->n;
+    std::lock_guard<std::mutex> lock1(this->queue_mutex);
+    return this->batch_queue.size();
 }
 
 unsigned int Batch_Q::get_max_size() {
@@ -100,5 +116,12 @@ unsigned int Batch_Q::get_max_size() {
 }
 
 Batch_Q::~Batch_Q() {
-    //TODO
+    std::lock_guard<std::mutex> lock1(this->queue_mutex);
+    Batch* batch;
+    while (!this->batch_queue.empty()) {
+        batch = this->batch_queue.front();
+        this->batch_queue.pop();
+        delete batch;
+    }
+    return;
 }

@@ -16,6 +16,7 @@ static const nuc_t INVALID_NUC = 4;
 
 typedef struct {
     unsigned int n_threads;
+    int m; //Number of cells
     bool mp_isfile; //TODO: piling up is to be handled by SCarborSNV
     std::string mp_fname;
 } global_params_t;

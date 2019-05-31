@@ -14,7 +14,7 @@ namespace piler_module {
 class Batch {
     public:
         /* Allocates memory for the batch*/
-        Batch(unsigned int batch_size=0, int id=0);
+        Batch(unsigned int batch_size, int id);
         /*Returns size of this batch even if smaller than standard batch size*/
         unsigned int get_batch_size();
         int get_batch_id();
@@ -26,7 +26,7 @@ class Batch {
     private:
         unsigned int batch_size;
         int batch_id;
-        //Array of Locus*s. TODO why not array of Loci themselves?
+        //Array of Locus*s.
         Locus** data;
 };
 
@@ -36,20 +36,17 @@ class Batch_Q {
         Batch_Q();
         void set_max_size(unsigned int max_size);
         unsigned int get_max_size();
-        /*Returns oldest batch and deletes from queue
-         * If empty returns null pointer TODO:(?)*/
-        //TODO: mutex protected. If no batch available yet(and !read_complete), what to do? return null? Wait? reader only takes mutex when pushing complete Batch. 
+        /*Returns oldest batch and deletes from queue*/
         Batch* pop();
         void push(Batch* b);
         unsigned int size();
         ~Batch_Q();
 
     private:
-        unsigned int max_size, n;
-        bool read_complete;
+        unsigned int max_size;
+        bool pileup_complete;
         std::queue<Batch*> batch_queue;
-        //TODO initialize, use lock?
-        std::mutex m_queue;
+        std::mutex queue_mutex;
 };
 
 
