@@ -98,41 +98,14 @@ Batch* Piler::make_batch() {
     Batch* batch = new Batch(this->batch_size, ++(this->last_batch_id));
     //Iterate over loci/pileup lines
     for (unsigned int i=0; i < this->batch_size; i++) {
-        //std::string line;
-        //getline(*(this->pileup_stream), line);
-        //std::cout << line << std::endl;
-
-        //if (line.empty()) {
-            //FIXME If is bams and no piles ready yet, would getline return empty?
-        //    //We do not want to resize the batch in this case
-        //    batch->resize(i+1);
-        //    this->pileup_complete = true;
-        //    //TODO send message to batch_Q
-        //    return batch;
-        //}
-
-        //std::vector<std::string> tokens;
-        //std::stringstream linestream(line);
-        //std::string token;
-        ////Split mpileup line into tokens
-        //while (getline(linestream, token, '\t')) {
-        //    tokens.push_back(token);
-        //}
-
-        //std::string chrom = tokens[0];
-        ////TODO test on overflowing ints
-        //unsigned int pos = static_cast<unsigned int>(std::stoll(tokens[1]));
-        //nuc_t ref = sequence_utils::decode_nucleotide(tokens[2].front());
-
-
         char coded_ref = INVALID_NUC;
         unsigned int pos;
         std::string chrom;
-        //Is this valid? XXX
         *this->pileup_stream >> chrom >> pos >> coded_ref;
 
         if (this->pileup_stream->eof() || coded_ref == INVALID_NUC) {
-            batch->resize(i+1);
+            //XXX i+1
+            batch->resize(i);
             this->pileup_complete = true;
             //TODO send message to batch_Q
             return batch;

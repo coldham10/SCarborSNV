@@ -121,7 +121,8 @@ Batch_Q::~Batch_Q() {
     while (!this->batch_queue.empty()) {
         batch = this->batch_queue.front();
         this->batch_queue.pop();
-        delete batch;
+        //FIXME this should rarely be used. Batches should already be deleted
+        //delete batch;
     }
     return;
 }

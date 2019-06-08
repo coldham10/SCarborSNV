@@ -35,13 +35,19 @@ nuc_t sequence_utils::decode_nucleotide(char encoded, nuc_t ref) {
 nuc_t sequence_utils::decode_ref(char encoded) {
     nuc_t ret = INVALID_NUC;
     switch(encoded) {
-        case 'A': ret = A;
+        case 'a' :
+        case 'A' : ret = A;
         break;
-        case 'C': ret = C;
+        case 'c' :
+        case 'C' : ret = C;
         break;
-        case 'G': ret = G;
+        case 'g' :
+        case 'G' : ret = G;
         break;
-        case 'T': ret = T;
+        case 't' :
+        case 'T' : ret = T;
+        case 'n' :
+        case 'N' : ret = UNKNOWN_NUC;
         break;
     }
     if (ret == INVALID_NUC) {
@@ -102,7 +108,7 @@ void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::s
     }
     if (qual_it != qual_string.end() || read_it != read_string.end()) {
         //Could have characters beyond final valid read if indel or sequence markers
-        if (*read_it == '$' || *read_it == '^') return;
+        if (*read_it == '$' || *read_it == '^' || *read_it == '+' || *read_it == '-') return;
         std::string err = "Read string, qual string and depth don't all agree\n";
         err.append("Reads: " + read_string + "\n");
         err.append("Quals: " + qual_string + "\n");
