@@ -18,15 +18,17 @@ class Locus {
         Locus(std::string chrom, unsigned int pos, nuc_t ref, int n_cells);
         void add_cell(int depth, std::string read_string, std::string qual_string);
         Cell* get_cell(int i);
-        //void set_cell(int i, Cell* cell);
+        std::string get_chrom();
+        unsigned int get_pos();
+        nuc_t get_ref();
         ~Locus();
 
 
     private:
         std::string chrom;
         unsigned int pos;
-        int n_cells, last_cell;
         nuc_t ref;
+        int n_cells, last_cell;
         Cell* cells;
 };
 

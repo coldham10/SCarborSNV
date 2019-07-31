@@ -104,7 +104,6 @@ Batch* Piler::make_batch() {
         *this->pileup_stream >> chrom >> pos >> coded_ref;
 
         if (this->pileup_stream->eof() || coded_ref == INVALID_NUC) {
-            //XXX i+1
             batch->resize(i);
             this->pileup_complete = true;
             //TODO send message to batch_Q
@@ -118,9 +117,6 @@ Batch* Piler::make_batch() {
         std::string read_string, qual_string;
 
         for (int j=0; j<this->n_cells; j++) {
-            //depth = stoi(tokens[3 + 3*j]);
-            //read_string = tokens[3 + 3*j + 1];
-            //qual_string = tokens[3 + 3*j + 2];
             *this->pileup_stream >> depth >> read_string >> qual_string;
             try {
                 locus->add_cell(depth, read_string, qual_string);
@@ -131,7 +127,6 @@ Batch* Piler::make_batch() {
                 throw std::runtime_error(prev);
             }
 
-            //sequence_utils::clean_fill(locus->get_cell(j), depth, ref, read_string, qual_string);
         }
         batch->set_locus(i, locus);
     }

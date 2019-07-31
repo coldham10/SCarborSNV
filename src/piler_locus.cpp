@@ -33,6 +33,18 @@ Cell* Locus::get_cell(int i) {
     return (this->cells) + i;
 }
 
+std::string Locus::get_chrom() {
+    return this->chrom;
+}
+
+unsigned int Locus::get_pos() {
+    return this->pos;
+}
+
+nuc_t Locus::get_ref(){
+    return this->ref;
+}
+
 Locus::~Locus() {
     for (int i=0; i<this->n_cells; i++) {
         delete[] this->cells[i].reads;

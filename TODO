@@ -6,4 +6,6 @@ If pileup not integer multiple of batch size, get core dump
 Separate thread for Filler
     -Correct usage of pileup_done flags
 Error checking for wromg m value
-
+Proper log-space calculations:
+    Refer to pg 7 of "Computing fast and accurate convolutions"
+deal with 0 read depth properly...

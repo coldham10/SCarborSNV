@@ -5,6 +5,7 @@
 #include "scarborsnv.h"
 #include "piler.h"
 #include "sigma_priors.h"
+#include "sequence_utils.h"
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
 
@@ -15,18 +16,41 @@ int main(int argc, char** argv) {
 
     piler_module::Piler* piler;
     if (gp.mp_isfile) {
+        //Read from file
         std::ifstream ifs(gp.mp_fname, std::ifstream::in);
         piler = new piler_module::Piler(&ifs, false, gp.m, gp.n_threads, 10, false);
     }
     else {
+        //Read from stdin
         piler = new piler_module::Piler(&std::cin, true, gp.m, gp.n_threads, 10, false);
     }
     piler_module::Batch* batch = piler->get_next_batch();
+
+    //Writing another pileup to see if we got everything
+    std::ofstream mirr;
+    mirr.open("mirror.pileup");
     while ( batch != NULL) {
-        std::cout << "got batch, " << piler->get_n_batches() << " left." << std::endl;
+        //std::cout << "got batch, " << piler->get_n_batches() << " left." << std::endl;
+        for (int i=0; i<batch->get_batch_size(); i++) {
+            piler_module::Locus* loc = batch->get_locus(i);
+            mirr << loc->get_chrom() << "\t" << loc->get_pos() << "\t" << sequence_utils::base2char(loc->get_ref());
+            for (int j=0; j<gp.m; j++) {
+                piler_module::Cell* c = loc->get_cell(j);
+                mirr << "\t";
+                for (int k=0; k<c->depth; k++) {
+                    mirr << sequence_utils::base2char(c->reads[k].base);
+                }
+                mirr << "\t";
+                for (int k=0; k<c->depth; k++) {
+                    mirr << (char) static_cast<int>((c->reads[k].l_err / sequence_utils::phred_multiplier )+33);
+                }
+            }
+        }
+        mirr << "\n";
         delete batch;
         batch = piler->get_next_batch();
     }
+
 
 
     delete piler;

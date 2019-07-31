@@ -117,5 +117,15 @@ void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::s
     return;
 }
             
-
+char sequence_utils::base2char(nuc_t base) {
+    switch(base)  {
+        case A : return 'A';
+        case C : return 'C';
+        case G : return 'G';
+        case T : return 'T';
+        case UNKNOWN_NUC : return 'N';
+        case INVALID_NUC : return 'X';
+    }
+    return 'Z';
+}
 
