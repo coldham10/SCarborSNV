@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <vector>
 #include <getopt.h>
 #include "scarborsnv.h"
 #include "piler.h"
@@ -14,6 +15,16 @@ int main(int argc, char** argv) {
     global_params_t gp{};
     init_params(&gp, &p0, argc, argv);
 
+    std::vector<double> priors = log_sigma_priors(&p0);
+    std::ofstream pout;
+    pout.open("priors.n");
+    pout << "m: " << p0.m << std::endl;
+    for (int i=0; i<2*(p0.m)+1; i++) {
+        pout << priors[i] << std::endl;
+    }
+    pout.close();
+
+    /*
     piler_module::Piler* piler;
     if (gp.mp_isfile) {
         //Read from file
@@ -54,6 +65,7 @@ int main(int argc, char** argv) {
 
 
     delete piler;
+    */
     return 0;
 }
 
@@ -120,5 +132,6 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     p0->l_mu        = std::log(mu0);
     p0->l_P_H       = std::log(P_H0);
     p0->l_P_clonal  = std::log(P_clonal0);
+    p0->m           = m_cells;
 }
 
