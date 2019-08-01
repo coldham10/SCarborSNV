@@ -2,11 +2,11 @@
 #define SIGMA_PRIORS_H_
 
 typedef struct {
-    long double l_P_tree; //Calculated in sigma_priors.c
+    long double l_P_tree; /*Calculated in sigma_priors.c */
     double l_lambda;
     double l_mu;
-    double l_P_H; //0.09? this should be from empirical
-    double l_P_clonal; //0.51(?) refers to proportion of *somatic* genetic mutations that are public
+    double l_P_H; /*0.09? this should be from empirical */
+    double l_P_clonal; /*0.51(?) refers to proportion of *somatic* genetic mutations that are public */
     int m;
 } prior_params_t;
 
@@ -18,4 +18,4 @@ int log_sigma_priors(prior_params_t* p, long double* l_priors);
 
 
 
-#endif //SIGMA_PRIORS_H_
+#endif /*SIGMA_PRIORS_H_ */

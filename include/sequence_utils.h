@@ -1,11 +1,11 @@
 #ifndef SEQUENCE_UTILS_H_
 #define SEQUENCE_UTILS_H_
 
-#include <tgmath.h>
+#include <math.h>
 #include "scarborsnv.h"
 
 
-//Multiply a phred by this to get the log probability of error
+/*Multiply a phred by this to get the log probability of error */
 static const long double phred_multiplier = -1/(10 * log10l(expl(1)));
 
 nuc_t decode_ref(char encoded);

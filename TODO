@@ -9,3 +9,5 @@ Error checking for wromg m value
 Proper log-space calculations:
     Refer to pg 7 of "Computing fast and accurate convolutions"
 deal with 0 read depth properly...
+
+Integrate!

@@ -19,8 +19,8 @@ long double log_factorial(int x) {
 
     int i;
     if (l_facts == NULL) {
-        //initialize static array
-        l_facts = calloc(1, sizeof(long double)); //ln(0!) = 0
+        /*initialize static array */
+        l_facts = calloc(1, sizeof(long double)); /*ln(0!) = 0 */
     }
     if (x > biggest) {
         l_facts = realloc(l_facts, (x+8)*sizeof(long double));
@@ -30,7 +30,7 @@ long double log_factorial(int x) {
         biggest = x+7;
     }
     else if (x == -123) {
-        //signal to free memory
+        /*signal to free memory */
         free(l_facts);
         l_facts = NULL;
         return -123.0;
@@ -43,7 +43,7 @@ long double log_binom(int n, int k) {
 
 }
 
-//Log-sum-exp
+/*Log-sum-exp */
 long double LSE(long double* to_sum, int n) {
     int i;
     long double maxv = logl(0.0);
@@ -55,13 +55,13 @@ long double LSE(long double* to_sum, int n) {
         return maxv;
     }
     for (i=0; i<n; i++) {
-        //LSE 'trick'
+        /*LSE 'trick' */
         sum += expl(to_sum[i] - maxv);
     }
     return logl(sum) + maxv;
 }
 
-//Two argument case
+/*Two argument case */
 long double LSE2(long double arg1, long double arg2) {
     long double big = (arg1 > arg2) ? arg1 : arg2;
     long double sml = (arg1 > arg2) ? arg2 : arg1;
@@ -80,9 +80,9 @@ long double LSE2(long double arg1, long double arg2) {
  * *********************************/
 
 
-//"T" function in paper
+/*"T" function in paper */
 long double l_T(int a, int b) {
-    //Kuipers et al. inspired tree function
+    /*Kuipers et al. inspired tree function */
     long double numerator = 2 * log_binom(a,b);
     long double denominator = logl(2*b-1) + log_binom(2*a, 2*b);
     return numerator - denominator;
@@ -90,25 +90,25 @@ long double l_T(int a, int b) {
     
 
 long double l_P_ancestral__subclonal(int m) {
-    //The log probability that a given subclonal mutation is ancestral to all sequenced cells.
-    //Assumes a neutral evolution model.
+    /*The log probability that a given subclonal mutation is ancestral to all sequenced cells. */
+    /*Assumes a neutral evolution model. */
     if (m >= 50) {
         return logl(0.0);
     }
     long double f_lower = 1.0e-8;
     long double f_upper = 0.5;
-    //By integrating P(f):
+    /*By integrating P(f): */
     long double l_k = -1.0 * logl((logl(f_upper/f_lower) - 2*f_upper + 2*f_lower));
 
-    //TODO check for underflow and overflow
-    //log[upper^m - lower^m]
+    /*TODO check for underflow and overflow */
+    /*log[upper^m - lower^m] */
     long double diff_pow_m  = logl(powl(f_upper, m) - powl(f_lower, m));
-    //log[upper^(m+1) - lower^(m+1)]
+    /*log[upper^(m+1) - lower^(m+1)] */
     long double diff_pow_m1  = logl(powl(f_upper, m+1) - powl(f_lower, m+1));
-    //first term in integration
+    /*first term in integration */
     long double term_1 = m*logl(2.0) - logl(m);
     term_1 = term_1 + diff_pow_m;
-    //second term in integration
+    /*second term in integration */
     long double term_2 = (m+1)*logl(2.0) - logl(m+1);
     term_2 = term_2 + diff_pow_m1;
 
@@ -163,19 +163,19 @@ long double l_P_sig__SNVT_HT(int m, int sig) {
                 to_sum = realloc(to_sum, array_length*sizeof(long double));
             }
             if (a-h == sig && h <= a) {
-                //Case 1
+                /*Case 1 */
                 to_sum[n_sum++] = l_T(m,a) + l_T(a,h);
             }
             if (a+h == sig && h <= a) {
-                //Case 2
+                /*Case 2 */
                 to_sum[n_sum++] = l_T(m,a) + l_T(a,h);
             }
             if (2*a == sig && h >= a) {
-                //Case 3
+                /*Case 3 */
                 to_sum[n_sum++] = l_T(m,h) + l_T(h,a);
             }
-        } //for h
-    } //for a
+        } /*for h */
+    } /*for a */
     long double l_sum = LSE(to_sum, n_sum);
     free(to_sum);
     return l_sum - logl(3) + logl(2*m-1) - logl(2*(m-1));
@@ -210,7 +210,7 @@ long double l_P_sig__SNVT(int m, int sig, long double l_P_H, long double l_P_HT_
 }
 
 long double l_P_sig__sSNV(int m, int sig, long double l_P_H, long double l_P_tree) {
-    //FIXME does not sum to 1 if m=1
+    /*FIXME does not sum to 1 if m=1 */
     long double term_1 = l_P_sig__SNVT(m, sig, l_P_H, l_P_tree) + l_P_tree;
     long double term_2 = l_P_sig__sSNV_NSNVT(m, sig, l_P_H, l_P_tree) + logl(1-expl(l_P_tree));
     return LSE2(term_1, term_2);
@@ -247,7 +247,7 @@ long double l_P_sig__NsSNV_H(int m, int sig, long double l_mu, long double l_P_H
 }
 
 long double l_P_sig__NsSNV_NH(int m, int sig, long double l_mu) {
-    //HWE
+    /*HWE */
     long double l_om_mu = logl(1-expl(l_mu));
     if (sig == 0) {
         return 2*l_om_mu;
@@ -273,9 +273,9 @@ long double l_P_sig(int m, int sig, prior_params_t* p) {
     return LSE2(term_1, term_2);
 }
 
-//Function to get overall priors
+/*Function to get overall priors */
 int log_sigma_priors(prior_params_t* p, long double* l_priors) {
-    //FIXME: does not sum to 1 if m=1
+    /*FIXME: does not sum to 1 if m=1 */
     int sig;
     int m = p->m;
     p->l_P_tree = l_P_intree__somatic(m, p->l_P_clonal);
@@ -283,7 +283,7 @@ int log_sigma_priors(prior_params_t* p, long double* l_priors) {
         l_priors[sig] = l_P_sig(m, sig, p);
 
     }
-    //Clear factorial memory
+    /*Clear factorial memory */
     log_factorial(-123);
     return 0;
 }

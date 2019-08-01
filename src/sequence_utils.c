@@ -56,28 +56,28 @@ long double char2l_err(char c) {
 }
 
 int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_t* processed_reads, long double* processed_quals) {
-//void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::string read_string, std::string qual_string) {
+/*void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::string read_string, std::string qual_string) { */
     int i, j, indel_length;
     char decimal_string[32];
     char* read_ptr = raw_reads;
     char* qual_ptr = raw_quals;
     if (read_depth == 0) return 0;
     for (i=0; i<read_depth; i++) {
-        //Start segment + mapping quality
+        /*Start segment + mapping quality */
         if (*read_ptr == '^') {
             read_ptr += 2;
             i--;
             continue;
         }
-        //End segment
+        /*End segment */
         else if (*read_ptr == '$') {
             read_ptr++;
             i--;
             continue;
         }
-        //Indel
+        /*Indel */
         else if (*read_ptr == '+' || *read_ptr == '-') {
-            //Number after +/- is indel length
+            /*Number after +/- is indel length */
             read_ptr++;
             j = 0;
             while ('0' <= *read_ptr && *read_ptr <= '9') {
@@ -88,22 +88,22 @@ int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_
             decimal_string[j] = '\0';
             indel_length = 0;
             indel_length = atoi(decimal_string);
-            //Indel reads are next, skipping to next non-indel
+            /*Indel reads are next, skipping to next non-indel */
             read_ptr += indel_length;
-            //TODO test this
+            /*TODO test this */
             i--;
             continue;
 
         }
-        //Normal read
+        /*Normal read */
         else {
             processed_reads[i] = decode_nucleotide(*(read_ptr++), ref);
             processed_quals[i] = char2l_err(*(qual_ptr++));
         }
-    } //End for
+    } /*End for */
 
     if (*qual_ptr != '\0' || *read_ptr != '\0') {
-        //Could have characters beyond final valid read if indel or sequence markers
+        /*Could have characters beyond final valid read if indel or sequence markers */
         if (*read_ptr == '$' || *read_ptr == '^' || *read_ptr == '+' || *read_ptr == '-') return 0;
             return 1;
     }

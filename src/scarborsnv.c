@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include "scarborsnv.h"
 #include "sigma_priors.h"
+#include "pileup_reader.h"
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
 
@@ -14,7 +15,7 @@ int main(int argc, char** argv) {
     prior_params_t* p0 = malloc(sizeof(prior_params_t));
     global_params_t* gp = malloc(sizeof(global_params_t));
 
-    //Uses getopt to parse cl parameters
+    /*Uses getopt to parse cl parameters */
     init_params(gp, p0, argc, argv);
 
     m = gp->m;
@@ -30,18 +31,18 @@ int main(int argc, char** argv) {
 }
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv) {
-    //Default values
+    /*Default values */
     unsigned int n_threads = 1;
     int m_cells = 1;
-    //char mp_fname[255] = "";
+    /*char mp_fname[255] = ""; */
     int mp_isfile = 0;
-    double lambda0 = 0.0001; //0.01;
+    double lambda0 = 0.0001; /*0.01; */
     double mu0 = 0.1;
     double P_H0 = 0.09;
     double P_clonal0 = 0.51;
 
-    //Using getopt to get command line arguments
-    //TODO: handle getting bams
+    /*Using getopt to get command line arguments */
+    /*TODO: handle getting bams */
     static struct option prior_options[] = {
         {"lambda", required_argument, NULL, 'l'},
         {"mu", required_argument, NULL, 'u'},
@@ -59,7 +60,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
                 n_threads = atoi(optarg);
                 break;
             case 'p':
-                //If pileup comes from file, -p pfile.pileup or --pileup-file pfile.xx
+                /*If pileup comes from file, -p pfile.pileup or --pileup-file pfile.xx */
                 mp_isfile = 1;
                 strcpy(gp->mp_fname, optarg);
                 break;
@@ -81,12 +82,12 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
         }
     }
            
-    //Populate global parameter struct
+    /*Populate global parameter struct */
     gp->n_threads   = n_threads;
     gp->mp_isfile   = mp_isfile;
     gp->m           = m_cells;
 
-    //Convert prior params to log space, populate intial parameters struct
+    /*Convert prior params to log space, populate intial parameters struct */
     p0->l_lambda    = log(lambda0);
     p0->l_mu        = log(mu0);
     p0->l_P_H       = log(P_H0);

@@ -3,22 +3,22 @@ EXE = SCarborSNV
 SRC_DIR = src
 OBJ_DIR = obj
 
-SRC = $(wildcard $(SRC_DIR)/*.cpp)
-OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CXX = g++
-CXXFLAGS = -Wall -g -std=c++11
+CC = gcc
+CCFLAGS = -Wall -g -std=c99
 PPFLAGS = -Iinclude
 LDFLAGS = -Llib
-LDLIBS = -lhts -lpthread
+LDLIBS = -lm -lhts -lpthread
 
 all: $(EXE)
 
 $(EXE): $(OBJ)
-	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(PPFLAGS) $(CXXFLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(PPFLAGS) $(CCFLAGS) -c $< -o $@
 
 clean:
 	$(RM) $(OBJ) $(EXE)
