@@ -62,14 +62,18 @@ int read_batch_loci(FILE* instream, Locus* loci, int n, int m) {
     return i;
 }
 
-int delete_locus_contents(Locus* locus, int m) {
-    int i;
-    for (i=0; i<m; i++) {
-        free(locus->cells[i].reads);
-        free(locus->cells[i].quals);
+int delete_locus_contents(Locus* loci, int n, int m) {
+    /*XXX only delete those have been filled.
+     * Pass n as this number, received from reader*/
+    int i, j;
+    for (i=0; i<n; i++) {
+        for (j=0; j<m; j++) {
+            free(loci[i].cells[j].reads);
+            free(loci[i].cells[j].quals);
+        }
+        free(loci[i].cells);
+        free(loci[i].sequence);
     }
-    free(locus->cells);
-    free(locus->sequence);
     return 0;
 }
 

@@ -23,6 +23,6 @@ int read_batch_loci(FILE* instream, Locus* loci, int n, int m);
 
 /*Deletes anything alloc'd by read_batch_loci. WARNING: still need to 
  * free the array of Locus separately*/
-int delete_locus_contents(Locus* locus, int m);
+int delete_locus_contents(Locus* loci, int n, int m);
 
 #endif /*define PILEUP_READER_H_ */

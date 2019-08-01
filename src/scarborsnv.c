@@ -7,11 +7,15 @@
 #include "sigma_priors.h"
 #include "pileup_reader.h"
 
+#define LOCUS_BATCH_SIZE (10)
+
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
 
 int main(int argc, char** argv) {
-    int m;
+    int m, n_loci_read;
     long double* P_sigma;
+    FILE* instream;
+
     prior_params_t* p0 = malloc(sizeof(prior_params_t));
     global_params_t* gp = malloc(sizeof(global_params_t));
 
@@ -20,12 +24,22 @@ int main(int argc, char** argv) {
 
     m = gp->m;
     P_sigma = malloc((2*m + 1) * sizeof(long double));
+    /* Compute 2m+1 priors and place in P_sigma */
     log_sigma_priors(p0, P_sigma);
 
-    printf("priors computed\n");
+    Locus* loci_batch = malloc(LOCUS_BATCH_SIZE * sizeof(Locus));
+    while (1) {
+        /*TODO: from options read from file*/
+        n_loci_read = read_batch_loci(stdin, loci_batch, LOCUS_BATCH_SIZE, m);
+        if (n_loci_read == 0) {
+            continue;
+        }
+        delete_locus_contents(loci_batch, n_loci_read, m);
+    }
 
     free(p0); free(gp);
     free(P_sigma);
+    free(loci_batch);
 
     return 0;
 }
