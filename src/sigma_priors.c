@@ -25,56 +25,55 @@ long double log_factorial(int x) {
         l_facts = calloc(1, sizeof(long double)); //ln(0!) = 0
     }
     if (x > biggest) {
-        realloc(l_facts, (x+8)*sizeof(long double));
-        for (i = biggest + 1; i <= x+8; i++) {
+        l_facts = realloc(l_facts, (x+8)*sizeof(long double));
+        for (i = biggest + 1; i < x+8; i++) {
             //l_facts.push_back(logl(static_cast<long double>(i)) + l_facts[i-1]);
             l_facts[i] = l_facts[i-1] + logl((long double)i);
         }
-        biggest = x+8;
+        biggest = x+7;
     }
     else if (x == -123) {
         //signal to free memory
         free(l_facts);
+        l_facts = NULL;
         return -123.0;
     }
     return l_facts[x];
 }
 
-inline long double log_binom(int n, int k) {
+long double log_binom(int n, int k) {
     return log_factorial(n) - log_factorial(k) - log_factorial(n-k);
 
 }
 
 //Log-sum-exp
-//TODO check C version!!
-//XXX API change
-long double LSE(long double to_sum, int n) {
+long double LSE(long double* to_sum, int n) {
     int i;
     long double maxv = logl(0.0);
     long double sum = 0;
-    //for (std::vector<long double>::iterator it = to_sum.begin(); it != to_sum.end(); ++it) {
     for (i=0; i<n; i++) {
-        //maxv = (*it > maxv) ? *it : maxv;
         maxv = (to_sum[i] > maxv) ? to_sum[i] : maxv;
     }
     if (maxv == logl(0.0)) {
         return maxv;
     }
-    //for (std::vector<long double>::iterator it = to_sum.begin(); it != to_sum.end(); ++it) {
     for (i=0; i<n; i++) {
         //LSE 'trick'
-        //sum += expl(*it - maxv);
         sum += expl(to_sum[i] - maxv);
     }
     return logl(sum) + maxv;
 }
 
 //Two argument case
-//TODO check C version
-inline long double LSE(long double arg1, long double arg2) {
+long double LSE2(long double arg1, long double arg2) {
     long double big = (arg1 > arg2) ? arg1 : arg2;
     long double sml = (arg1 > arg2) ? arg2 : arg1;
-    return big + logl(1 + expl(sml-big));
+    if (sml == logl(0)) {
+        return big;
+    }
+    else {
+        return big + logl(1 + expl(sml-big));
+    }
 }
 
 /*************************************
@@ -85,7 +84,6 @@ inline long double LSE(long double arg1, long double arg2) {
 
 
 //"T" function in paper
-//TODO check C version
 long double l_T(int a, int b) {
     //Kuipers et al. inspired tree function
     long double numerator = 2 * log_binom(a,b);
@@ -94,7 +92,6 @@ long double l_T(int a, int b) {
 }
     
 
-//TODO check C version
 long double l_P_ancestral__subclonal(int m) {
     //The log probability that a given subclonal mutation is ancestral to all sequenced cells.
     //Assumes a neutral evolution model.
@@ -126,11 +123,10 @@ long double l_P_ancestral__subclonal(int m) {
 long double l_P_intree__somatic(int m, long double l_P_clonal) {
     long double P_clonal = expl(l_P_clonal);
     long double l_P_ancestral = l_P_ancestral__subclonal(m) + logl(1-P_clonal);
-    //TODO logaddexp
     return logl(1 - P_clonal - expl(l_P_ancestral));
 }
 
-inline long double l_P_sig__sSNV_NSNVT_H_NHT(int m, int sig) {
+long double l_P_sig__sSNV_NSNVT_H_NHT(int m, int sig) {
      return logl((long double)((sig == 0 || sig == 2*m) ? 0.5 : 0 ));
 }
 
@@ -147,41 +143,40 @@ long double l_P_sig__sSNV_NSNVT_HT(int m, int sig) {
 long double l_P_sig__sSNV_NSNVT_H(int m, int sig, long double l_P_HT__H) {
     long double term_1 = logl(1-expl(l_P_HT__H)) + l_P_sig__sSNV_NSNVT_H_NHT(m, sig);
     long double term_2 = l_P_HT__H + l_P_sig__sSNV_NSNVT_HT(m, sig);
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
-inline long double l_P_sig__sSNV_NSNVT_NH(int m, int sig) {
+long double l_P_sig__sSNV_NSNVT_NH(int m, int sig) {
      return logl((long double)((sig == m) ? 1 : 0 ));
 }
 
 long double l_P_sig__sSNV_NSNVT(int m, int sig, long double l_P_H, long double l_P_HT__H) {
     long double term_1 = l_P_sig__sSNV_NSNVT_H(m, sig, l_P_HT__H) + l_P_H;
     long double term_2 = l_P_sig__sSNV_NSNVT_NH(m, sig) + logl(1-expl(l_P_H));
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
-//XXX API change
 long double l_P_sig__SNVT_HT(int m, int sig) {
     int a, h;
-    //std::vector<long double> to_sum;
     int n_sum = 0;
-    //Maximum theoretical size needed
-    long double* to_sum = malloc(3*m*m*sizeof(long double));
+    int array_length = (int)(m/2 + 1);
+    long double* to_sum = malloc(array_length*sizeof(long double));
     for (a = 1; a < m; ++a) {
         for (h = 1; h < m; ++h) {
+            if (n_sum + 3 > array_length) {
+                array_length *= 2;
+                to_sum = realloc(to_sum, array_length*sizeof(long double));
+            }
             if (a-h == sig && h <= a) {
                 //Case 1
-                //to_sum.push_back(l_T(m,a) + l_T(a,h));
                 to_sum[n_sum++] = l_T(m,a) + l_T(a,h);
             }
             if (a+h == sig && h <= a) {
                 //Case 2
-                //to_sum.push_back(l_T(m,a) + l_T(a,h));
                 to_sum[n_sum++] = l_T(m,a) + l_T(a,h);
             }
             if (2*a == sig && h >= a) {
                 //Case 3
-                //to_sum.push_back(l_T(m,h) + l_T(h,a));
                 to_sum[n_sum++] = l_T(m,h) + l_T(h,a);
             }
         } //for h
@@ -203,7 +198,7 @@ long double l_P_sig__SNVT_H_NHT(int m, int sig) {
 long double l_P_sig__SNVT_H(int m, int sig, long double l_P_HT__H) {
     long double term_1 = l_P_sig__SNVT_HT(m, sig) + l_P_HT__H;
     long double term_2 = l_P_sig__SNVT_H_NHT(m, sig) + logl(1-expl(l_P_HT__H));
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
 long double l_P_sig__SNVT_NH(int m, int sig) {
@@ -216,14 +211,14 @@ long double l_P_sig__SNVT_NH(int m, int sig) {
 long double l_P_sig__SNVT(int m, int sig, long double l_P_H, long double l_P_HT__H) {
     long double term_1 = l_P_sig__SNVT_H(m, sig, l_P_HT__H) + l_P_H;
     long double term_2 = l_P_sig__SNVT_NH(m, sig) + logl(1-expl(l_P_H));
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
 long double l_P_sig__sSNV(int m, int sig, long double l_P_H, long double l_P_tree) {
     //FIXME does not sum to 1 if m=1
     long double term_1 = l_P_sig__SNVT(m, sig, l_P_H, l_P_tree) + l_P_tree;
     long double term_2 = l_P_sig__sSNV_NSNVT(m, sig, l_P_H, l_P_tree) + logl(1-expl(l_P_tree));
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
 /* Welltype Priors */
@@ -235,7 +230,7 @@ long double l_P_sig__NsSNV_H(int m, int sig, long double l_mu, long double l_P_H
     if (sig == 0) {
         term_1 = 2 * l_om_mu;
         term_2 = l_mu + l_om_mu + l_om_P_HT__H;
-        return LSE(term_1, term_2);
+        return LSE2(term_1, term_2);
     } else if (sig > 0 && sig < 2*m && sig != m) {
         term_1 = l_mu + l_om_mu + l_P_HT__H;
         term_2 = l_T(m, abs(sig-m)) + logl(2*m-1) - logl(2*(m-1));
@@ -245,7 +240,7 @@ long double l_P_sig__NsSNV_H(int m, int sig, long double l_mu, long double l_P_H
     } else if (sig == 2*m) {
         term_1 = 2 * l_mu;
         term_2 = l_mu + l_om_mu + l_om_P_HT__H;
-        return LSE(term_1, term_2);
+        return LSE2(term_1, term_2);
     } else {
         return -1;
     }
@@ -268,30 +263,27 @@ long double l_P_sig__NsSNV_NH(int m, int sig, long double l_mu) {
 long double l_P_sig__NsSNV(int m, int sig, long double l_mu, long double l_P_H, long double l_P_HT__H) {
     long double term_1 = l_P_sig__NsSNV_H(m, sig, l_mu, l_P_HT__H) + l_P_H;
     long double term_2 = l_P_sig__NsSNV_NH(m, sig, l_mu) + logl(1-expl(l_P_H));
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
 long double l_P_sig(int m, int sig, prior_params_t* p) {
     long double l_om_lambda = logl(1-expl(p->l_lambda));
     long double term_1 = p->l_lambda + l_P_sig__sSNV(m, sig, p->l_P_H, p->l_P_tree);
     long double term_2 = l_om_lambda + l_P_sig__NsSNV(m, sig, p->l_mu, p->l_P_H, p->l_P_tree);
-    return LSE(term_1, term_2);
+    return LSE2(term_1, term_2);
 }
 
 //Function to get overall priors
-//XXX API change
-//std::vector<double> log_sigma_priors(prior_params_t* p) {
 int log_sigma_priors(prior_params_t* p, long double* l_priors) {
     //FIXME: does not sum to 1 if m=1
     int sig;
     int m = p->m;
-    int i = 0;
-    //std::vector<double> l_prior_vec; 
     p->l_P_tree = l_P_intree__somatic(m, p->l_P_clonal);
     for (sig = 0; sig <= 2*m; sig++) {
-        //l_prior_vec.push_back(l_P_sig(m, sig, p));
-        l_priors[i++] = l_P_sig(m, sig, p);
+        l_priors[sig] = l_P_sig(m, sig, p);
 
     }
+    //Clear factorial memory
+    log_factorial(-123);
     return 0;
 }
