@@ -13,10 +13,8 @@
  *
  * *********************************/
 
-//TODO CHECK C VERSION
 long double log_factorial(int x) {
     static int biggest = 0;
-    //static std::vector<long double> l_facts{static_cast<long double>(0)}; //ln(0!) = 0
     static long double* l_facts = NULL;
 
     int i;
@@ -27,7 +25,6 @@ long double log_factorial(int x) {
     if (x > biggest) {
         l_facts = realloc(l_facts, (x+8)*sizeof(long double));
         for (i = biggest + 1; i < x+8; i++) {
-            //l_facts.push_back(logl(static_cast<long double>(i)) + l_facts[i-1]);
             l_facts[i] = l_facts[i-1] + logl((long double)i);
         }
         biggest = x+7;
@@ -95,7 +92,6 @@ long double l_T(int a, int b) {
 long double l_P_ancestral__subclonal(int m) {
     //The log probability that a given subclonal mutation is ancestral to all sequenced cells.
     //Assumes a neutral evolution model.
-    //TODO check that 50 is sufficient (cutoff for 'all in one subclone')
     if (m >= 50) {
         return logl(0.0);
     }
@@ -116,7 +112,6 @@ long double l_P_ancestral__subclonal(int m) {
     long double term_2 = (m+1)*logl(2.0) - logl(m+1);
     term_2 = term_2 + diff_pow_m1;
 
-    //TODO inplement more underflow resistant function to handle this sort of situation.
     return l_k + logl(expl(term_1) - expl(term_2));
 }
 
@@ -221,7 +216,12 @@ long double l_P_sig__sSNV(int m, int sig, long double l_P_H, long double l_P_tre
     return LSE2(term_1, term_2);
 }
 
-/* Welltype Priors */
+/*************************************
+ *
+ * Welltype Priors
+ *
+ * *********************************/
+
 
 long double l_P_sig__NsSNV_H(int m, int sig, long double l_mu, long double l_P_HT__H) {
     long double term_1, term_2;

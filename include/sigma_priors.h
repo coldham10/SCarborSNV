@@ -1,9 +1,8 @@
 #ifndef SIGMA_PRIORS_H_
 #define SIGMA_PRIORS_H_
 
-#include <vector>
 typedef struct {
-    long double l_P_tree; //Calculated in sigma_priors.cpp
+    long double l_P_tree; //Calculated in sigma_priors.c
     double l_lambda;
     double l_mu;
     double l_P_H; //0.09? this should be from empirical
@@ -15,7 +14,7 @@ typedef struct {
  * across a collection of m cells. Returned vector contains 2m+1 values
  * since sigma can range between 0 and 2m inclusive.
  */
-std::vector<double> log_sigma_priors(prior_params_t* p);
+int log_sigma_priors(prior_params_t* p, long double* l_priors);
 
 
 
