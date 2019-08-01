@@ -23,20 +23,29 @@ int main(int argc, char** argv) {
     init_params(gp, p0, argc, argv);
 
     m = gp->m;
+    if (gp->mp_isfile) {
+        instream = fopen(gp->mp_fname, "r");
+    }
+    else {
+        instream = stdin;
+    }
     P_sigma = malloc((2*m + 1) * sizeof(long double));
     /* Compute 2m+1 priors and place in P_sigma */
     log_sigma_priors(p0, P_sigma);
 
     Locus* loci_batch = malloc(LOCUS_BATCH_SIZE * sizeof(Locus));
     while (1) {
-        /*TODO: from options read from file*/
-        n_loci_read = read_batch_loci(stdin, loci_batch, LOCUS_BATCH_SIZE, m);
+        n_loci_read = read_batch_loci(instream, loci_batch, LOCUS_BATCH_SIZE, m);
         if (n_loci_read == 0) {
-            continue;
+            break;
         }
+        printf("Found, eg: %ld\n", loci_batch[2].position);
         delete_locus_contents(loci_batch, n_loci_read, m);
     }
 
+    if (gp->mp_isfile) {
+        fclose(instream);
+    }
     free(p0); free(gp);
     free(P_sigma);
     free(loci_batch);

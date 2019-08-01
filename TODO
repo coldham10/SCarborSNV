@@ -1,13 +1,11 @@
 output batches to new pileup file and use diff to make sure threy are the same
-use top to make sure memory usage doesn't swell
+use (!top) valgrind massif to make sure memory usage doesn't swell
 Fix pileup input from file
 If pileup not integer multiple of batch size, get core dump
     -Seems only when n > batch_size * max_queue_size
-Separate thread for Filler
+Separate thread for reader?
     -Correct usage of pileup_done flags
 Error checking for wromg m value
 Proper log-space calculations:
     Refer to pg 7 of "Computing fast and accurate convolutions"
 deal with 0 read depth properly...
-
-Integrate!
