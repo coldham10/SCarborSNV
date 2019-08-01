@@ -23,22 +23,29 @@ int main(int argc, char** argv) {
     init_params(gp, p0, argc, argv);
 
     m = gp->m;
+    /* Open the mpileup stream*/
     if (gp->mp_isfile) {
         instream = fopen(gp->mp_fname, "r");
     }
     else {
         instream = stdin;
     }
-    P_sigma = malloc((2*m + 1) * sizeof(long double));
+
     /* Compute 2m+1 priors and place in P_sigma */
+    P_sigma = malloc((2*m + 1) * sizeof(long double));
     log_sigma_priors(p0, P_sigma);
 
+    /* Retrieve & process loci in batches */
     Locus* loci_batch = malloc(LOCUS_BATCH_SIZE * sizeof(Locus));
     while (1) {
         n_loci_read = read_batch_loci(instream, loci_batch, LOCUS_BATCH_SIZE, m);
         if (n_loci_read == 0) {
             break;
         }
+        /* TODO use priors & these reads to call function from new file
+         * to create Cell_likelihood structs? for each locus.
+         * Don't want to waste memory storing seqname, position etc for each cell_locus likelihood */
+
         printf("Found, eg: %ld\n", loci_batch[2].position);
         delete_locus_contents(loci_batch, n_loci_read, m);
     }

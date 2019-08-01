@@ -9,3 +9,7 @@ Error checking for wromg m value
 Proper log-space calculations:
     Refer to pg 7 of "Computing fast and accurate convolutions"
 deal with 0 read depth properly...
+    - also ! quality reads. Discard? Adjust likelihood values?
+
+/* Possible (LATER) multithread architecture: a worker picks up a batch and processes those 
+* loci all the way through DP etc until cross-genome calculations like cell distances need be calculated */
