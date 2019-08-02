@@ -1,6 +1,7 @@
 #ifndef PILEUP_READER_H_
 #define PILEUP_READER_H_
 
+#include <stdio.h>
 #include "scarborsnv.h"
 
 typedef struct {

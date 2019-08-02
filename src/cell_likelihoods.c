@@ -1,3 +1,4 @@
+#include <math.h>
 #include "scarborsnv.h"
 #include "math_utils.h"
 #include "pileup_reader.h"
@@ -36,18 +37,18 @@ long double l_P_amplification(nuc_t ref, nuc_t beta, int g, long double l_P_err)
     static long double l_P3 = NAN;
     static long double l_P4 = NAN;
     /*Initialize on first call */
-    if isnan(l_P1) {
+    if (isnan(l_P1)) {
         l_P1 = logl(1 - expl(logl(3) + logl(l_P_err)));
     }
-    if isnan(l_P2) {
+    if (isnan(l_P2)) {
         /* log((1-2*p_e)/2) */
         l_P2 = logl(1 - expl(logl(2) + l_P_err)) - logl(2);
     }
-    if isnan(l_P3) {
+    if (isnan(l_P3)) {
         /* (1/3)*(1- l_P2) */
         l_P3 = LSE2(-1 * logl(6), l_P_err - logl(3));
     }
-    if isnan(l_P4) {
+    if (isnan(l_P4)) {
         l_P4 = logl(1-expl(l_P_err)) - logl(3);
     }
 
@@ -75,13 +76,13 @@ long double homoz_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp
     long double l_e, l_P_beta__g, term1, term2;
     /* product found by summing in log space */
     long double product = 0;
-    for (k = 0; k < cell->read_count; k++;) {
+    for (k = 0; k < cell->read_count; k++) {
         read = cell->reads[k];
         l_e  = cell->quals[k];
 
         l_P_beta__g = l_P_amplification(ref, read, g, l_P_amp_err);
-        term1 = logl(1-expl(l_P_amp_err)) + l_P_beta__g;
-        term2 = l_P_beta__g - logl(3) + logl(1-expl(l_P_amp_err));
+        term1 = logl(1-expl(l_e)) + l_P_beta__g;
+        term2 =  l_e - logl(3) + logl(1-expl(l_P_beta__g));
         product += LSE2(term1, term2);
     }
 
@@ -91,6 +92,7 @@ long double homoz_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp
 /*Heterozygous likelihood calculation */
 long double hetz_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp_err) {
     /*TODO*/
+    return NAN;
 }
 
 /*Given a Cell_locus, log-probability of amplification error and an 3-length array for results, compute P(g|d_ij)*/

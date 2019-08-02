@@ -1,4 +1,5 @@
 #include <math.h>
+#include "math_utils.h"
 
 /*Log-sum-exp */
 long double LSE(long double* to_sum, int n) {

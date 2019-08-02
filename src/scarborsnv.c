@@ -6,13 +6,14 @@
 #include "scarborsnv.h"
 #include "sigma_priors.h"
 #include "pileup_reader.h"
+#include "cell_likelihoods.h"
 
 #define LOCUS_BATCH_SIZE (10)
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
 
 int main(int argc, char** argv) {
-    int m, n_loci_read;
+    int i, j, m, n_loci_read;
     long double* P_sigma;
     FILE* instream;
 
@@ -45,6 +46,12 @@ int main(int argc, char** argv) {
         /* TODO use priors & these reads to call function from new file
          * to create Cell_likelihood structs? for each locus.
          * Don't want to waste memory storing seqname, position etc for each cell_locus likelihood */
+
+        for (i = 0; i < n_loci_read; i++) {
+            for (j = 0; j < m; j++) {
+                prepare_reads(&(loci_batch[i].cells[j]));
+            }
+        }
 
         printf("Found, eg: %ld\n", loci_batch[2].position);
         delete_locus_contents(loci_batch, n_loci_read, m);

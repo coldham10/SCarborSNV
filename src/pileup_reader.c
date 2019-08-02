@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "pileup_reader.h"
 #include "sequence_utils.h"

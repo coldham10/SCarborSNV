@@ -1,5 +1,5 @@
-#define MATH_UTILS_H_
 #ifndef MATH_UTILS_H_
+#define MATH_UTILS_H_
 
 /*Log-sum-exp using the 'trick' to prevent underflow*/
 long double LSE(long double* to_sum, int n);
