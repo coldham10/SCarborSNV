@@ -10,7 +10,7 @@ CC = gcc
 CCFLAGS = -Wall -g -std=c99
 PPFLAGS = -Iinclude
 LDFLAGS = -Llib
-LDLIBS = -lm -lhts -lpthread
+LDLIBS = -lm
 
 all: $(EXE)
 
