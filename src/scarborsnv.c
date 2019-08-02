@@ -11,9 +11,10 @@
 #define LOCUS_BATCH_SIZE (10)
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
+void process_loci_batch(Locus* loci_batch, int batch_size, prior_params_t* p0);
 
 int main(int argc, char** argv) {
-    int i, j, m, n_loci_read;
+    int m, n_loci_read;
     long double* P_sigma;
     FILE* instream;
 
@@ -47,11 +48,7 @@ int main(int argc, char** argv) {
          * to create Cell_likelihood structs? for each locus.
          * Don't want to waste memory storing seqname, position etc for each cell_locus likelihood */
 
-        for (i = 0; i < n_loci_read; i++) {
-            for (j = 0; j < m; j++) {
-                prepare_reads(&(loci_batch[i].cells[j]));
-            }
-        }
+        process_loci_batch(loci_batch, n_loci_read, p0);
 
         printf("Found, eg: %ld\n", loci_batch[2].position);
         delete_locus_contents(loci_batch, n_loci_read, m);
@@ -65,6 +62,17 @@ int main(int argc, char** argv) {
     free(loci_batch);
 
     return 0;
+}
+
+void process_loci_batch(Locus* loci_batch, int batch_size, prior_params_t* p0) {
+    /* FIXME more descriptive name */
+    /*TODO should also receive a chunk of memory for both likelihoods and locus descriptions*/
+    int i, j;
+    for (i = 0; i < batch_size; i++) {
+        for (j = 0; j < p0->m; j++) {
+            prepare_reads(&(loci_batch[i].cells[j]));
+        }
+    }
 }
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv) {
