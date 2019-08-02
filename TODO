@@ -11,5 +11,7 @@ Proper log-space calculations:
 deal with 0 read depth properly...
     - also ! quality reads. Discard? Adjust likelihood values?
 
+Fix possible buffer overflow when reading
+
 /* Possible (LATER) multithread architecture: a worker picks up a batch and processes those 
 * loci all the way through DP etc until cross-genome calculations like cell distances need be calculated */

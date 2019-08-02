@@ -29,7 +29,7 @@ int read_locus(FILE* instream, int m, Locus* locus) {
     for (i=0; i<m; i++) {
         fscanf(instream, "%d", &(cells[i].read_count));
         cells[i].cell_position = i;
-        /*TODO is 3 times enough if every read is an insertion? */
+        /*FIXME is 3 times enough if every read is an insertion? */
         /*TODO will probably need to read dynamically, until + or - and then skip as appropriate */
         read_buffer = (char*)malloc((3*cells[i].read_count +2) * sizeof(char));
         qual_buffer = (char*)malloc((3*cells[i].read_count +2) * sizeof(char));

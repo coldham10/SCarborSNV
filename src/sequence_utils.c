@@ -56,7 +56,6 @@ long double char2l_err(char c) {
 }
 
 int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_t* processed_reads, long double* processed_quals) {
-/*void sequence_utils::clean_fill(read* to_fill, int read_depth, nuc_t ref, std::string read_string, std::string qual_string) { */
     int i, j, indel_length;
     char decimal_string[32];
     char* read_ptr = raw_reads;
