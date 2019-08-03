@@ -25,7 +25,7 @@ int read_locus(FILE* instream, int m, Locus* locus) {
     /*Array of m Cell_locus structs */
     Cell_locus* cells = (Cell_locus*)malloc(m * sizeof(Cell_locus));
 
-    for (i=0; i<m; i++) {
+    for (i = 0; i < m; i++) {
         fscanf(instream, "%d", &(cells[i].read_count));
         cells[i].cell_position = i;
         /*FIXME is 3 times enough if every read is an insertion? NO, caused a crash. FIXME FIXME */
@@ -51,7 +51,7 @@ int read_locus(FILE* instream, int m, Locus* locus) {
 int read_batch_loci(FILE* instream, Locus* loci, int n, int m) {
     int i;
     int status = 0;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         status = read_locus(instream, m, &loci[i]);
         if (status != 0) {
             break;
@@ -65,8 +65,8 @@ int delete_locus_contents(Locus* loci, int n, int m) {
     /*XXX only delete those have been filled.
      * Pass n as this number, received from reader*/
     int i, j;
-    for (i=0; i<n; i++) {
-        for (j=0; j<m; j++) {
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {
             free(loci[i].cells[j].reads);
             free(loci[i].cells[j].quals);
         }
@@ -82,7 +82,7 @@ int main() {
     int n = 10; int m = 3;
     Locus* loci = (Locus*)malloc(n * sizeof(Locus));
     nread = read_batch_loci(stdin, loci, n, m);
-    for (i=0; i<nread; i++) {
+    for (i = 0; i < nread; i++) {
         delete_locus_contents(&(loci[i]), m);
     }
     free(loci);

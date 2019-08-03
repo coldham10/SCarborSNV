@@ -43,6 +43,7 @@ nuc_t decode_ref(char encoded) {
         break;
         case 't' :
         case 'T' : ret = T;
+        break;
         case 'n' :
         case 'N' : ret = UNKNOWN_NUC;
         break;
@@ -61,7 +62,7 @@ int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_
     char* read_ptr = raw_reads;
     char* qual_ptr = raw_quals;
     if (read_depth == 0) return 0;
-    for (i=0; i<read_depth; i++) {
+    for (i = 0; i < read_depth; i++) {
         /*Start segment + mapping quality */
         if (*read_ptr == '^') {
             read_ptr += 2;

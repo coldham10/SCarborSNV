@@ -3,10 +3,14 @@
 
 typedef struct {
     long double l_P_tree; /*Calculated in sigma_priors.c */
-    double l_lambda;
-    double l_mu;
-    double l_P_H; /*0.09? this should be from empirical */
-    double l_P_clonal; /*0.51(?) refers to proportion of *somatic* genetic mutations that are public */
+    double l_lambda; /*Somatic mutation frequency*/
+    double l_mu; /*Germline mutation frequency*/
+    double l_P_H; /*Haploid event frequency. 0.09? this should be from empirical */
+    /*FIXME get initial values for these two*/
+    /*TODO add getopt options to change these following two*/
+    double l_P_amp_err;
+    double l_P_ADO;
+    double l_P_clonal; /*0.51(?) refers to proportion of somatic genetic mutations that are public */
     int m;
 } prior_params_t;
 

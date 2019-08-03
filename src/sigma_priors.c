@@ -7,44 +7,6 @@
  * log probability of sigma given there is a somatic SNV shared by all cells
  * and there is a haploid event shared by all cells */
 
-
-/*************************************
- *
- * Counting Tools
- *
- * *********************************/
-
-long double log_factorial(int x) {
-    static int biggest = 0;
-    static long double* l_facts = NULL;
-
-    int i;
-    if (l_facts == NULL) {
-        /*initialize static array */
-        l_facts = calloc(1, sizeof(long double)); /*ln(0!) = 0 */
-    }
-    if (x > biggest) {
-        l_facts = realloc(l_facts, (x+8)*sizeof(long double));
-        for (i = biggest + 1; i < x+8; i++) {
-            l_facts[i] = l_facts[i-1] + logl((long double)i);
-        }
-        biggest = x+7;
-    }
-    else if (x == -123) {
-        /*signal to free memory */
-        free(l_facts);
-        l_facts = NULL;
-        return -123.0;
-    }
-    return l_facts[x];
-}
-
-long double log_binom(int n, int k) {
-    return log_factorial(n) - log_factorial(k) - log_factorial(n-k);
-
-}
-
-
 /*************************************
  *
  * Mutant Priors
@@ -255,7 +217,7 @@ int log_sigma_priors(prior_params_t* p, long double* l_priors) {
         l_priors[sig] = l_P_sig(m, sig, p);
 
     }
-    /*Clear factorial memory */
-    log_factorial(-123);
     return 0;
 }
+
+

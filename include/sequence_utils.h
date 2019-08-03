@@ -5,8 +5,9 @@
 #include "scarborsnv.h"
 
 
-/*Multiply a phred by this to get the log probability of error */
-static const long double phred_multiplier = -1/(10 * log10l(expl(1)));
+/*Multiply a phred by this to get the log probability of error. Initialized in char2l_err. */
+/* ln(P) = -(Q/10)*ln(10) */
+static const long double phred_multiplier = -0.2302585092994;
 
 nuc_t decode_ref(char encoded);
 

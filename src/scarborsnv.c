@@ -4,17 +4,19 @@
 #include <string.h>
 #include <getopt.h>
 #include "scarborsnv.h"
+#include "math_utils.h"
 #include "sigma_priors.h"
 #include "pileup_reader.h"
-#include "cell_likelihoods.h"
+#include "locus_likelihoods.h"
+#include "posteriors.h"
 
 #define LOCUS_BATCH_SIZE (10)
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
-void process_loci_batch(Locus* loci_batch, int batch_size, prior_params_t* p0);
+void update_pairwise_p(Locus* loci_batch, int batch_size, prior_params_t* p0, long double* sig_priors, long double** numerators, int** denominators);
 
 int main(int argc, char** argv) {
-    int m, n_loci_read;
+    int i, m, n_loci_read;
     long double* P_sigma;
     FILE* instream;
 
@@ -37,6 +39,17 @@ int main(int argc, char** argv) {
     P_sigma = malloc((2*m + 1) * sizeof(long double));
     log_sigma_priors(p0, P_sigma);
 
+    /*Two mxm matrices for computing pairwise p-bar*/
+    long double** p_bar_numerators = malloc(m * sizeof(long double*));
+    for (i = 0; i < m; i++) {
+        p_bar_numerators[i] = malloc(m * sizeof(long double));
+    }
+    /*XXX remember to update both symmetic values */
+    int** p_bar_denominators = malloc(m * sizeof(int*));
+    for (i = 0; i < m; i++) {
+        p_bar_denominators[i] = malloc(m * sizeof(int));
+    }
+
     /* Retrieve & process loci in batches */
     Locus* loci_batch = malloc(LOCUS_BATCH_SIZE * sizeof(Locus));
     while (1) {
@@ -44,11 +57,7 @@ int main(int argc, char** argv) {
         if (n_loci_read == 0) {
             break;
         }
-        /* TODO use priors & these reads to call function from new file
-         * to create Cell_likelihood structs? for each locus.
-         * Don't want to waste memory storing seqname, position etc for each cell_locus likelihood */
-
-        process_loci_batch(loci_batch, n_loci_read, p0);
+        update_pairwise_p(loci_batch, n_loci_read, p0, P_sigma, p_bar_numerators, p_bar_denominators);
 
         printf("Found, eg: %ld\n", loci_batch[2].position);
         delete_locus_contents(loci_batch, n_loci_read, m);
@@ -60,31 +69,53 @@ int main(int argc, char** argv) {
     free(p0); free(gp);
     free(P_sigma);
     free(loci_batch);
+    for (i = 0; i < m; i++) {
+        free(p_bar_numerators[i]);
+    }
+    free(p_bar_numerators);
+    for (i = 0; i < m; i++) {
+        free(p_bar_denominators[i]);
+    }
+    free(p_bar_denominators);
+    free_log_factorials();
 
     return 0;
 }
 
-void process_loci_batch(Locus* loci_batch, int batch_size, prior_params_t* p0) {
-    /* FIXME more descriptive name */
-    /*TODO should also receive a chunk of memory for both likelihoods and locus descriptions*/
-    int i, j;
+void update_pairwise_p(Locus* loci_batch, int batch_size, prior_params_t* p, long double* sig_priors, long double** numerators, int** denominators) {
+    int i;
+    long double* locus_ls = malloc((2 * p->m + 1) * sizeof(long double));
+    long double** l_P_sig__D = malloc(batch_size * sizeof(long double*));
+    /*Iterate through loci for posterior sigma distributions*/
     for (i = 0; i < batch_size; i++) {
-        for (j = 0; j < p0->m; j++) {
-            prepare_reads(&(loci_batch[i].cells[j]));
-        }
+        /*P(D|sigma) into locus_ls*/
+        locus_likelihoods(&(loci_batch[i]), locus_ls, p);
+        /*P(sigma|D) into l_P_sig__D*/
+        l_P_sig__D[i] = malloc((2*p->m + 1) * sizeof(long double));
+        sigma_posteriors(l_P_sig__D[i], sig_priors, locus_ls, p->m);
     }
+    free(locus_ls);
+
+    for (i = 0; i < batch_size; i++) {
+        free(l_P_sig__D[i]);
+    }
+    free(l_P_sig__D);
+    return;
 }
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv) {
     /*Default values */
     unsigned int n_threads = 1;
     int m_cells = 1;
-    /*char mp_fname[255] = ""; */
     int mp_isfile = 0;
     double lambda0 = 0.0001; /*0.01; */
     double mu0 = 0.1;
     double P_H0 = 0.09;
     double P_clonal0 = 0.51;
+    /*XXX these initial values are illegitamite!! XXX*/
+    double P_amplification_err = 0.01;
+    double P_ADO = 0.05;
+
 
     /*Using getopt to get command line arguments */
     /*TODO: handle getting bams */
@@ -96,10 +127,9 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
         {"pileup-file", required_argument, NULL, 'p'},
         {"n-cells", required_argument, NULL, 'm'}
     };
-
     int c, opt_idx = 0;
+    /*TODO add options for amplification err and P_ADO*/
     while ((c = getopt_long(argc, argv, "t:p:m:", prior_options, &opt_idx) )!= -1 ) {
-
         switch(c) {
             case 't':
                 n_threads = atoi(optarg);
@@ -126,17 +156,17 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
                 break;
         }
     }
-           
     /*Populate global parameter struct */
     gp->n_threads   = n_threads;
     gp->mp_isfile   = mp_isfile;
     gp->m           = m_cells;
-
     /*Convert prior params to log space, populate intial parameters struct */
     p0->l_lambda    = log(lambda0);
     p0->l_mu        = log(mu0);
     p0->l_P_H       = log(P_H0);
     p0->l_P_clonal  = log(P_clonal0);
+    p0->l_P_amp_err = log(P_amplification_err);
+    p0->l_P_ADO     = log(P_ADO);
     p0->m           = m_cells;
 }
 

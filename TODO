@@ -1,17 +1,28 @@
-output batches to new pileup file and use diff to make sure threy are the same
-use (!top) valgrind massif to make sure memory usage doesn't swell
-Fix pileup input from file
-If pileup not integer multiple of batch size, get core dump
-    -Seems only when n > batch_size * max_queue_size
-Separate thread for reader?
-    -Correct usage of pileup_done flags
+FEATURES
+Ignore 0 read depths
+    -in locus_likelihoods.c I set P(X|g) = P_ADO^2... how legit is this?
+        -Seems to give plausible results for P(D|sig), but will need to prove in paper...
+        -Empirically, if we have m cells and m-1 are X but 1 is strongly g=2 then posterior distribution should have large tail, not be focused on 0.
+        -Even if m is large
 Error checking for wromg m value
-Proper log-space calculations:
-    Refer to pg 7 of "Computing fast and accurate convolutions"
-deal with 0 read depth properly...
-    - also ! quality reads. Discard? Adjust likelihood values?
 
-Fix possible buffer overflow when reading
 
-/* Possible (LATER) multithread architecture: a worker picks up a batch and processes those 
-* loci all the way through DP etc until cross-genome calculations like cell distances need be calculated */
+BUGS
+data with ! quality too common in test. Is this normal? Reject or use?
+Buffer for reads can overflow (quals should be fine)
+
+
+
+TESTING
+output batches to new pileup file and use diff to make sure threy are the same
+use valgrind massif to make sure memory usage doesn't swell
+
+
+
+THREADING
+Separate thread for reader?
+Possible (LATER) multithread architecture: a worker picks up a batch and processes those all the way to overline(p)
+
+
+EM
+Once called, imputations can be from LOH or ADO. Relative probabilities easy from tree (ADO are independent between cells)

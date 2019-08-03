@@ -38,7 +38,7 @@ long double l_P_amplification(nuc_t ref, nuc_t beta, int g, long double l_P_err)
     static long double l_P4 = NAN;
     /*Initialize on first call */
     if (isnan(l_P1)) {
-        l_P1 = logl(1 - expl(logl(3) + logl(l_P_err)));
+        l_P1 = logl(1 - expl(logl(3) + l_P_err));
     }
     if (isnan(l_P2)) {
         /* log((1-2*p_e)/2) */
@@ -70,7 +70,7 @@ long double l_P_amplification(nuc_t ref, nuc_t beta, int g, long double l_P_err)
 
 
 /*Homozygous likelihood calculation */
-long double homoz_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp_err) {
+long double simple_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp_err) {
     int k;
     nuc_t read;
     long double l_e, l_P_beta__g, term1, term2;
@@ -89,28 +89,22 @@ long double homoz_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp
     return product;
 }
 
-/*Heterozygous likelihood calculation */
-long double hetz_cell_l(Cell_locus* cell, int g, nuc_t ref, long double l_P_amp_err) {
-    /*TODO*/
-    return NAN;
-}
-
-/*Given a Cell_locus, log-probability of amplification error and an 3-length array for results, compute P(g|d_ij)*/
-int cell_likelihoods (Cell_locus* cell, long double* log_ls, nuc_t ref, long double l_P_amp_err) {
-    int i;
+/*Given a Cell_locus, log-probability of amplification error and an 3-length array for results, compute P(d_ij|g)*/
+int cell_likelihoods (Cell_locus* cell, long double* log_ls, nuc_t ref, long double l_P_amp_err, long double l_P_ADO) {
+    /*FIXME needs l_P_ADO & l_P_amp_err. What initial values? should be in p0? check if monovar gives a p_e for table 6*/
+    long double term1, term2;
     if (cell->read_count < 1) {
         /*Indicate insufficient depth. */
         log_ls[0] = log_ls[1] = log_ls[2] = NAN;
         return 1;
     }
-    /* g = 0,1,2*/
-    for (i = 0; i < 3; i++) {
-        if ((i % 2) == 0) {
-            log_ls[i] = homoz_cell_l(cell, i, ref, l_P_amp_err);
-        }
-        else {
-            log_ls[i] =  hetz_cell_l(cell, i, ref, l_P_amp_err);
-        }
-    }
+    /*Homozygous are g=0,2*/
+    log_ls[0] = simple_cell_l(cell, 0, ref, l_P_amp_err);
+    log_ls[2] = simple_cell_l(cell, 2, ref, l_P_amp_err);
+    /*Heterozygous case must consider with and without ADO*/
+    term1 = l_P_ADO + LSE2(log_ls[0], log_ls[2]) - logl(2);
+    term2 = logl(1-expl(l_P_ADO)) + simple_cell_l(cell, 1, ref, l_P_amp_err);
+    log_ls[1] = LSE2(term1, term2);
+
     return 0;
 }

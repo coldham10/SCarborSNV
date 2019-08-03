@@ -5,5 +5,9 @@
 long double LSE(long double* to_sum, int n);
 /*Two argument case of the above*/
 long double LSE2(long double arg1, long double arg2);
+/*Returns the log of binomial coefficient (n k)*/
+long double log_binom(int n, int k);
+/*Factorial values are memoized, so this function frees that memory*/
+void free_log_factorials();
 
 #endif /*MATH_UTILS_H_*/
