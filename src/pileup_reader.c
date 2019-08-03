@@ -4,7 +4,33 @@
 #include "sequence_utils.h"
 
 /*Maximum length of sequence name*/
-#define L_SEQNAME (255)
+#define L_SEQNAME (256)
+
+char* dynamic_read(FILE* instream, char* read_buffer, size_t expected_size) {
+    char c;
+    size_t size = expected_size;
+    char* buffer = read_buffer;
+    int found_start = 0;
+    int chars_read = 0;
+    while (1) {
+        c = fgetc(instream);
+        if(!found_start && (c == '\t' || c == ' ')) {
+            continue;
+        }
+        found_start = 1;
+        if (c == '\t' || c == ' ') {
+            buffer[chars_read] = '\0';
+            return buffer;
+        }
+        buffer[chars_read] = c;
+        chars_read += 1;
+        if (chars_read + 4 >= size) { 
+            buffer = realloc(buffer, size * 2);
+            size *= 2;
+        }
+    }
+}
+
 
 int read_locus(FILE* instream, int m, Locus* locus) {
     int i;
@@ -24,21 +50,18 @@ int read_locus(FILE* instream, int m, Locus* locus) {
 
     /*Array of m Cell_locus structs */
     Cell_locus* cells = (Cell_locus*)malloc(m * sizeof(Cell_locus));
-
     for (i = 0; i < m; i++) {
         fscanf(instream, "%d", &(cells[i].read_count));
         cells[i].cell_position = i;
-        /*FIXME is 3 times enough if every read is an insertion? NO, caused a crash. FIXME FIXME */
-        /*TODO will probably need to read dynamically, until + or - and then skip as appropriate */
-        read_buffer = (char*)malloc((3*cells[i].read_count +2) * sizeof(char));
-        qual_buffer = (char*)malloc((3*cells[i].read_count +2) * sizeof(char));
-        fscanf(instream, "%s %s", read_buffer, qual_buffer);
-
-        cells[i].reads = (nuc_t*)malloc((cells[i].read_count +2) * sizeof(nuc_t));
-        cells[i].quals = (long double*)calloc((cells[i].read_count +2) , sizeof(long double));
-
+        /*Indels can cause read string to be much longer than depth*/
+        read_buffer = (char*)malloc((cells[i].read_count + 32) * sizeof(char));
+        read_buffer = dynamic_read(instream, read_buffer, cells[i].read_count + 32);
+        /*Qual string should always only be the length of the read depth*/
+        qual_buffer = (char*)malloc((cells[i].read_count + 32) * sizeof(char));
+        fscanf(instream, "%s", qual_buffer);
+        cells[i].reads = (nuc_t*)malloc((cells[i].read_count + 2) * sizeof(nuc_t));
+        cells[i].quals = (long double*)calloc((cells[i].read_count + 2) , sizeof(long double));
         clean_fill(cells[i].read_count, locus->ref_base, read_buffer, qual_buffer, cells[i].reads, cells[i].quals);
-        
         free(read_buffer);
         free(qual_buffer);
     }
@@ -76,15 +99,3 @@ int delete_locus_contents(Locus* loci, int n, int m) {
     return 0;
 }
 
-/*
-int main() {
-    int i, nread;
-    int n = 10; int m = 3;
-    Locus* loci = (Locus*)malloc(n * sizeof(Locus));
-    nread = read_batch_loci(stdin, loci, n, m);
-    for (i = 0; i < nread; i++) {
-        delete_locus_contents(&(loci[i]), m);
-    }
-    free(loci);
-}
-*/

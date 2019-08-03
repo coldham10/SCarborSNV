@@ -9,8 +9,6 @@ Error checking for wromg m value
 
 BUGS
 data with ! quality too common in test. Is this normal? Reject or use?
-Buffer for reads can overflow (quals should be fine)
-
 
 
 TESTING

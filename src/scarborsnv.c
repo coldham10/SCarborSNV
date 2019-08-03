@@ -59,7 +59,6 @@ int main(int argc, char** argv) {
         }
         update_pairwise_p(loci_batch, n_loci_read, p0, P_sigma, p_bar_numerators, p_bar_denominators);
 
-        printf("Found, eg: %ld\n", loci_batch[2].position);
         delete_locus_contents(loci_batch, n_loci_read, m);
     }
 
@@ -84,7 +83,10 @@ int main(int argc, char** argv) {
 
 void update_pairwise_p(Locus* loci_batch, int batch_size, prior_params_t* p, long double* sig_priors, long double** numerators, int** denominators) {
     int i;
+    /*XXX test variable*/
+    int j;
     long double* locus_ls = malloc((2 * p->m + 1) * sizeof(long double));
+    /*Posterior sigma distribution for each locus in batch*/
     long double** l_P_sig__D = malloc(batch_size * sizeof(long double*));
     /*Iterate through loci for posterior sigma distributions*/
     for (i = 0; i < batch_size; i++) {
@@ -95,8 +97,11 @@ void update_pairwise_p(Locus* loci_batch, int batch_size, prior_params_t* p, lon
         sigma_posteriors(l_P_sig__D[i], sig_priors, locus_ls, p->m);
     }
     free(locus_ls);
-
     for (i = 0; i < batch_size; i++) {
+        for (j = 0; j < 2*p->m + 1; j++) {
+            printf("%Lf ", expl(l_P_sig__D[i][j]));
+        }
+        printf("\n");
         free(l_P_sig__D[i]);
     }
     free(l_P_sig__D);
@@ -108,13 +113,13 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     unsigned int n_threads = 1;
     int m_cells = 1;
     int mp_isfile = 0;
-    double lambda0 = 0.0001; /*0.01; */
+    double lambda0 = 0.0001; 
     double mu0 = 0.1;
     double P_H0 = 0.09;
     double P_clonal0 = 0.51;
-    /*XXX these initial values are illegitamite!! XXX*/
-    double P_amplification_err = 0.01;
-    double P_ADO = 0.05;
+    /*These initial values are taken from the monovar source*/
+    double P_amplification_err = 0.002;
+    double P_ADO = 0.2;
 
 
     /*Using getopt to get command line arguments */
@@ -122,8 +127,8 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     static struct option prior_options[] = {
         {"lambda", required_argument, NULL, 'l'},
         {"mu", required_argument, NULL, 'u'},
-        {"p_haploid", required_argument, NULL, 'h'},
-        {"p_clonal", required_argument, NULL, 'c'},
+        {"p-haploid", required_argument, NULL, 'h'},
+        {"p-clonal", required_argument, NULL, 'c'},
         {"pileup-file", required_argument, NULL, 'p'},
         {"n-cells", required_argument, NULL, 'm'}
     };
@@ -135,7 +140,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
                 n_threads = atoi(optarg);
                 break;
             case 'p':
-                /*If pileup comes from file, -p pfile.pileup or --pileup-file pfile.xx */
+                /*If pileup comes from file, -p pfile.pileup or --pileup-file=pfile.xx */
                 mp_isfile = 1;
                 strcpy(gp->mp_fname, optarg);
                 break;
