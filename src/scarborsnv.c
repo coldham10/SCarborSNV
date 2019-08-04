@@ -7,8 +7,7 @@
 #include "math_utils.h"
 #include "sigma_priors.h"
 #include "pileup_reader.h"
-#include "cell_likelihoods.h"
-#include "locus_likelihoods.h"
+#include "likelihoods.h"
 #include "posteriors.h"
 
 #define LOCUS_BATCH_SIZE (10)
