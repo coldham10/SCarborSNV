@@ -9,6 +9,7 @@
 #include "pileup_reader.h"
 #include "likelihoods.h"
 #include "posteriors.h"
+#include "tree.h"
 
 #define LOCUS_BATCH_SIZE (10)
 
@@ -26,6 +27,9 @@ int main(int argc, char** argv) {
     long double* P_sigma;
     FILE* instream;
     FILE* f_candidates;
+    long double** p_bar_numerators;
+    long double** distance_matrix;
+    int** p_bar_denominators;
     unsigned long candidates_found = 0;
     prior_params_t* p0 = malloc(sizeof(prior_params_t));
     global_params_t* gp = malloc(sizeof(global_params_t));
@@ -56,9 +60,9 @@ int main(int argc, char** argv) {
     P_sigma = malloc((2*m + 1) * sizeof(long double));
     log_sigma_priors(p0, P_sigma);
     /*Two mxm matrices for computing pairwise p-bar*/
-    long double** p_bar_numerators = malloc(m * sizeof(long double*));
+    p_bar_numerators = malloc(m * sizeof(long double*));
     for (i = 0; i < m; i++) { p_bar_numerators[i] = calloc(m , sizeof(long double)); }
-    int** p_bar_denominators = malloc(m * sizeof(int*));
+    p_bar_denominators = malloc(m * sizeof(int*));
     for (i = 0; i < m; i++) { p_bar_denominators[i] = calloc(m , sizeof(int)); }
     /* Retrieve & process loci in batches, identify and store candidates*/
     Locus* loci_batch = malloc(LOCUS_BATCH_SIZE * sizeof(Locus));
@@ -77,20 +81,26 @@ int main(int argc, char** argv) {
                 p_bar_denominators);
         delete_locus_contents(loci_batch, n_loci_read, m);
     }
+    free(loci_batch);
     /*Done reading pileup file*/
     if (gp->mp_isfile) { fclose(instream); }
     fprintf(stderr, "Found %ld candidate loci ", candidates_found);
     fprintf(stderr, "of which %d had more than one valid cell\n", sqr_mat_sum(p_bar_denominators, m)/2);
-
-    /* TODO */
-
-
-    /*Freeing memory, closing files*/
-    free(loci_batch);
+    /*Compute additive tree distances*/
+    distance_matrix = malloc(m * sizeof(long double*));
+    for (i = 0; i < m; i++) { distance_matrix[i] = malloc(m * sizeof(long double)); }
+    expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m);
+    /*Freeing old matrices*/
     for (i = 0; i < m; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
     for (i = 0; i < m; i++) { free(p_bar_denominators[i]); }
     free(p_bar_denominators);
+    /* TODO */
+
+
+    /*Freeing memory, closing files*/
+    for (i = 0; i < m; i++) { free(distance_matrix[i]); }
+    free(distance_matrix);
     free(p0); free(gp);
     free(P_sigma);
     free_log_factorials();
