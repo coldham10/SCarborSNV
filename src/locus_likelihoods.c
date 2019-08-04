@@ -64,14 +64,11 @@ int locus_DP(long double* locus_ls, long double* cell_ls, prior_params_t* p) {
 }
 
 
-int locus_likelihoods(Locus* locus, long double* locus_ls, prior_params_t* p) {
+int locus_likelihoods(long double* cell_ls, long double* locus_ls, prior_params_t* p) {
     int i;
     int n_valid_cells = p->m;
-    /*Cell genotype likelihoods*/
-    long double* cell_ls = malloc(p->m * 3 * sizeof(long double));
     for (i = 0; i < p->m; i++) {
-        prepare_reads(&(locus->cells[i]));
-        if (locus->cells[i].read_count == 0) {
+        if (isnan(cell_ls[3*i])) {
             /*Neither allele was amplified, so likelihood set to p_ADO^2*/
             /*XXX is this legitamite */
             /*TODO test this with toy examples to see posterior sigma distribution vs prior */
@@ -79,11 +76,6 @@ int locus_likelihoods(Locus* locus, long double* locus_ls, prior_params_t* p) {
             n_valid_cells -= 1;
             continue;
         }
-        cell_likelihoods(&(locus->cells[i]),
-                cell_ls + 3*i,
-                locus->ref_base,
-                p->l_P_amp_err,
-                p->l_P_ADO);
     }
     if (n_valid_cells == 0) {
         /*All likelihoods are just p_ADO^2m*/
@@ -94,6 +86,5 @@ int locus_likelihoods(Locus* locus, long double* locus_ls, prior_params_t* p) {
     else {
         locus_DP(locus_ls, cell_ls, p);
     }
-    free(cell_ls);
     return 0;
 }

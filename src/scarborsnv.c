@@ -7,6 +7,7 @@
 #include "math_utils.h"
 #include "sigma_priors.h"
 #include "pileup_reader.h"
+#include "cell_likelihoods.h"
 #include "locus_likelihoods.h"
 #include "posteriors.h"
 
@@ -82,16 +83,23 @@ int main(int argc, char** argv) {
 }
 
 void update_pairwise_p(Locus* loci_batch, int batch_size, prior_params_t* p, long double* sig_priors, long double** numerators, int** denominators) {
-    int i;
-    /*XXX test variable*/
-    int j;
-    long double* locus_ls = malloc((2 * p->m + 1) * sizeof(long double));
+    int i, j;
+    long double** cell_ls  = malloc(batch_size * sizeof(long double*));
     /*Posterior sigma distribution for each locus in batch*/
     long double** l_P_sig__D = malloc(batch_size * sizeof(long double*));
-    /*Iterate through loci for posterior sigma distributions*/
+    long double*  locus_ls = malloc((2 * p->m + 1) * sizeof(long double));
+    /*Iterate through loci for cell likelihoods and posterior sigma distributions*/
     for (i = 0; i < batch_size; i++) {
+        cell_ls[i] = malloc(3 * p->m * sizeof(long double));
+        for (j = 0; j < p->m; j++) {
+            cell_likelihoods(&(loci_batch[i].cells[j]),
+                    cell_ls[i] + 3*j,
+                    loci_batch[i].ref_base,
+                    p->l_P_amp_err,
+                    p->l_P_ADO);
+        }
         /*P(D|sigma) into locus_ls*/
-        locus_likelihoods(&(loci_batch[i]), locus_ls, p);
+        locus_likelihoods(cell_ls[i], locus_ls, p);
         /*P(sigma|D) into l_P_sig__D*/
         l_P_sig__D[i] = malloc((2*p->m + 1) * sizeof(long double));
         sigma_posteriors(l_P_sig__D[i], sig_priors, locus_ls, p->m);
@@ -103,8 +111,10 @@ void update_pairwise_p(Locus* loci_batch, int batch_size, prior_params_t* p, lon
         }
         printf("\n");
         free(l_P_sig__D[i]);
+        free(cell_ls[i]);
     }
     free(l_P_sig__D);
+    free(cell_ls);
     return;
 }
 
