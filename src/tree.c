@@ -7,6 +7,10 @@ int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** 
     for (i = 0; i < m; i++) {
         JC_dist[i][i] = logl(0);
         for (j = i + 1; j < m; j++) {
+            if (freq_denom[i][j] == 0) {
+                JC_dist[i][j] = JC_dist[j][i] = NAN;
+                continue;
+            }
             l_p_bar = freq_numr[i][j] - logl(freq_denom[i][j] * 2);
             l_p_bar = logl(4) - logl(3) + l_p_bar;
             JC_dist[i][j] = JC_dist[j][i] = -(3.0/4.0) * logl(1-expl(l_p_bar));
