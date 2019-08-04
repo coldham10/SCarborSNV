@@ -16,7 +16,8 @@ typedef struct {
     unsigned int n_threads;
     int m; /*Number of cells */
     int mp_isfile; /*TODO: piling up is to be handled by SCarborSNV */
-    char mp_fname[255];
+    char mp_fname[512];
+    char tmp_fname[512];
 } global_params_t;
 
 #endif  /*SCARBORSNV_H_ */

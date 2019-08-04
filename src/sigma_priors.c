@@ -17,8 +17,8 @@
 /*"T" function in paper */
 long double l_T(int a, int b) {
     /*Kuipers et al. inspired tree function */
-    long double numerator = 2 * log_binom(a,b);
-    long double denominator = logl(2*b-1) + log_binom(2*a, 2*b);
+    long double numerator = 2 * l_binom_coeff(a,b);
+    long double denominator = logl(2*b-1) + l_binom_coeff(2*a, 2*b);
     return numerator - denominator;
 }
     

@@ -168,7 +168,7 @@ int locus_DP(long double* locus_ls, long double* cell_ls, prior_params_t* p) {
     }
     /*Rescale for likelihood values*/
     for (l = 0; l <= 2*m; l++) {
-        locus_ls[l] = DP_matrix[m-1][l] - log_binom(2*m, l);
+        locus_ls[l] = DP_matrix[m-1][l] - l_binom_coeff(2*m, l);
     }
     /*Free matrix*/
     for (k = 0; k < m; k++) {
