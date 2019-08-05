@@ -23,7 +23,7 @@ int update_candidates(Locus* loci_batch,
         int** denom);
 
 int main(int argc, char** argv) {
-    int i, m, n_loci_read;
+    int i, j, m, n_loci_read;
     long double* P_sigma;
     FILE* instream;
     FILE* f_candidates;
@@ -61,7 +61,12 @@ int main(int argc, char** argv) {
     log_sigma_priors(p0, P_sigma);
     /*Two (m+1)x(m+1) matrices for computing pairwise p-bar, (incl. root)*/
     p_bar_numerators = malloc((m + 1) * sizeof(long double*));
-    for (i = 0; i < m + 1; i++) { p_bar_numerators[i] = calloc(m + 1, sizeof(long double)); }
+    for (i = 0; i < m + 1; i++) {
+        p_bar_numerators[i] = calloc(m + 1, sizeof(long double));
+        for (j = 0; j < m + 1; j++) {
+            p_bar_numerators[i][j] = logl(0);
+        }
+    }
     p_bar_denominators = malloc((m + 1) * sizeof(int*));
     for (i = 0; i < m + 1; i++) { p_bar_denominators[i] = calloc(m + 1, sizeof(int)); }
     /* Retrieve & process loci in batches, identify and store candidates*/
@@ -84,14 +89,18 @@ int main(int argc, char** argv) {
     free(loci_batch);
     /*Done reading pileup file*/
     if (gp->mp_isfile) { fclose(instream); }
-    fprintf(stderr, "Found %ld candidate loci ", candidates_found);
-    fprintf(stderr, "over which %d cell pairs were sequenced at the same locus\n", sqr_mat_sum(p_bar_denominators, m)/2);
+    fprintf(stderr, "Found %ld candidate loci\n", candidates_found);
+    fprintf(stderr, "%d pairwise comparisons made between cells to infer phylogeny\n", sqr_mat_sum(p_bar_denominators, m)/2);
     /*Compute additive tree distances*/
     distance_matrix = malloc((m + 1) * sizeof(long double*));
     for (i = 0; i < m + 1; i++) { distance_matrix[i] = malloc((m + 1) * sizeof(long double)); }
     i = expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m + 1);
-    /*TODO deal with this*/
-    if (i != 0) { fprintf(stderr, "Lack of homology between some cells\n"); }
+    if (i != 0) {
+        fprintf(stderr, "Failed to find all pairwise distances. Some cells may share no overlapping loci\n");
+        /*TODO orphan some cells if no relation? and if this doesn't fix it, investigate imputation
+         * e.g. "Fast NJ-like algorithms to deal with incomplete distance matrices" --google.
+         * This could be done in tree.c, too*/
+    }
     /*Freeing old matrices*/
     for (i = 0; i < m + 1; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
@@ -214,36 +223,37 @@ int update_candidates(Locus* loci_batch,
         sigma_posteriors(l_P_sig__D[i], sig_priors, locus_ls, p->m);
     }
     free(locus_ls);
-    /*Identify candidate loci, calculate genotype posteriors & write to file
+    /*Identify candidate loci write their genotype posteriors to tmp file
      * Also calculate P_bar numerators and denominators*/
     genotype_posteriors = malloc(3 * p->m * sizeof(long double));
     for (i = 0; i < batch_size; i++) {
+        cell_posteriors(genotype_posteriors, l_P_sig__D[i], cell_ls[i], p->m);
         if (l_P_sig__D[i][0] <= p->thresh) {
             candidates_found++;
-            cell_posteriors(genotype_posteriors, l_P_sig__D[i], cell_ls[i], p->m);
             write_candidate(candidates_file, &(loci_batch[i]), genotype_posteriors, p->m);
-            /*P_bar calculations for building cell distances*/
-            n_valid_cells = 0;
-            /*See if multiple cells are valid*/
-            for (j = 0; j < p->m; j++) {
-                if(loci_batch[i].cells[j].read_count > 0) {
-                    valid_cells[n_valid_cells++] = j;
-                }
+        }
+        /*P_bar calculations for building cell distances*/
+        n_valid_cells = 0;
+        /*See what cells are valid*/
+        for (j = 0; j < p->m; j++) {
+            if(loci_batch[i].cells[j].read_count > 0) {
+                valid_cells[n_valid_cells++] = j;
             }
-            /*Iterate through pairs of valid cells*/
-            for (j = 0; j < n_valid_cells; j++) {
-                a = valid_cells[j];
-                for (k = j+1; k < n_valid_cells; k++) {
-                    b = valid_cells[k];
-                    denom[a][b]++; denom[b][a]++;
-                    pair_exp_diff = pair_exp_difference(genotype_posteriors, a, b);
-                    numr[a][b] = LSE2(numr[a][b], pair_exp_diff);
-                    numr[a][b] = numr[b][a];
-                }
-                numr[a][p->m] = numr[p->m][a]
-                    = LSE2(logl(2) + genotype_posteriors[3*a + 2], genotype_posteriors[3*a + 1]);
-               denom[a][p->m]++; denom[p->m][a]++; 
+        }
+        /*Iterate through pairs of valid cells*/
+        for (j = 0; j < n_valid_cells; j++) {
+            a = valid_cells[j];
+            for (k = j+1; k < n_valid_cells; k++) {
+                b = valid_cells[k];
+                denom[a][b]++; denom[b][a]++;
+                pair_exp_diff = pair_exp_difference(genotype_posteriors, a, b);
+                numr[a][b] = LSE2(numr[b][a], pair_exp_diff);
+                numr[b][a] = numr[a][b];
             }
+            /*For each valid cell also compute distance with reference (outgroup)*/
+            pair_exp_diff = LSE2(logl(2) + genotype_posteriors[3*a + 2], genotype_posteriors[3*a + 1]);
+            numr[a][p->m] = numr[p->m][a] = LSE2(numr[a][p->m], pair_exp_diff);
+            denom[a][p->m]++; denom[p->m][a]++; 
         }
         free(l_P_sig__D[i]);
         free(cell_ls[i]);
