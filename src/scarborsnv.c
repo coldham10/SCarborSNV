@@ -101,11 +101,14 @@ int main(int argc, char** argv) {
          * e.g. "Fast NJ-like algorithms to deal with incomplete distance matrices" --google.
          * This could be done in tree.c, too*/
     }
+    build_tree_nj(distance_matrix, m);
     /*Freeing old matrices*/
     for (i = 0; i < m + 1; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
     for (i = 0; i < m + 1; i++) { free(p_bar_denominators[i]); }
     free(p_bar_denominators);
+
+
     /* TODO */
     for (i = 0; i < m + 1; i++) {
         for (int j = 0; j < m + 1; j++) {

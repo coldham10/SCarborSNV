@@ -23,25 +23,19 @@ int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** 
 }
 
 void update_r(long double*  r, Node** L, long double** d, int* idx, int n_L);
-void update_D(long double** D, Node** L, long double** d, long double* r, int* idx, int n_L);
+void min_D(int* out, Node** L, long double** d, long double* r, int* idx, int n_L) {
 
-int build_tree_nj(long double** dist_mat, int m) {
-    /*Following notation in durbin et al*/
-    /*XXX is 2m enough for all potential nodes?*/
-    int i, j, n_L = 0;
+Node* build_tree_nj(long double** dist_mat, int m) {
+    /*Following notation in durbin et al. NB assumes full distance matrix*/
+    int i, j, last_id;
+    int coord[2];
+    int n_L = 0;
     Node* node_i;
     Node* root;
     Node** L = malloc(2*m * sizeof(Node*)); 
     /*Indices of active nodes in L*/
     int* L_idx = malloc(2*m * sizeof(int));
     for (i = 0; i < 2*m; i++) { L[i] = NULL; }
-    long double** D = malloc(2*m * sizeof(long double*));
-    for (i = 0; i < 2*m; i++) {
-        D[i] = malloc(2*m * sizeof(long double));
-        for (j = 0; j < 2*m; j++) {
-            D[i][j] = INFINITY;
-        }
-    }
     long double* r = malloc(2*m * sizeof(long double));
     /*Extend distance matrix to accommodate internal nodes*/
     long double** d = malloc(2*m * sizeof(long double*));
@@ -57,8 +51,8 @@ int build_tree_nj(long double** dist_mat, int m) {
         L_idx[i] = i;
         node_i = malloc(sizeof(Node));
         node_i->id      = i;
-        node_i->is_root = 0;
         node_i->is_cell = 1;
+        node_i->is_root = 0;
         node_i->n_nbrs  = 0;
         L[i] = node_i;
     }
@@ -66,21 +60,57 @@ int build_tree_nj(long double** dist_mat, int m) {
     L[m]->is_root = 1;
     L[m]->is_cell = 0;
     root = L[m];
+    last_id = m;
     /*NJ: Tree building loop */
     while (n_L > 2) {
         update_r(r, L, d, L_idx, n_L);
-        update_D(D, L, d, r, L_idx, n_L);
+        min_D(coord, L, d, r, L_idx, n_L);
+        /*make new internal node*/
+        node_i = malloc(sizeof(Node));
+        node_i->id = ++last_id;
+        node_i->is_cell = 0;
+        node_i->is_root = 0;
+        /*Connect neighbours*/
+        node_i->nbrs[0] = L[coord[0]];
+        node_i->nbrs[1] = L[coord[1]];
+        node_i->n_nbrs = 2;
+        node_i->nbrs[0]->nbrs[node_i->nbrs[0]->n_nbrs++] = node_i;
+        node_i->nbrs[1]->nbrs[node_i->nbrs[1]->n_nbrs++] = node_i;
+        /*Compute new distances*/
+        node_i->edge_dists[0] = 0.5 * (d[coord[0]][coord[1]] + r[coord[0]] - r[coord[1]]);
+        node_i->nbrs[0]->edge_dists[node_i->nbrs[0]->n_nbrs - 1] = node_i->edge_dists[0];
+        node_i->edge_dists[1] = d[coord[0]][coord[1]] - node_i->edge_dists[0];
+        node_i->nbrs[1]->edge_dists[node_i->nbrs[1]->n_nbrs - 1] = node_i->edge_dists[1];
+        /*Remove old nodes from active list*/
+        L[coord[0]] = L[coord[1]] = NULL;
+        j = 0;
+        for (i = 0; i < n_L-2; i++) {
+            if (L_idx[i+j] == coord[0] || L_idx[i+j] == coord[1]) {
+                j++;
+            }
+            L_idx[i] = L_idx[i+j];
+        }
+        n_L -= 2;
+        /*Compute distance of new node to remaining nodes in L*/
+        for (i = 0; i < n_L; i++) {
+            d[last_id][L_idx[i]] = d[L_idx[i]][last_id] = 0.5 * (d[coord[0]][L_idx[i]] + d[coord[1]][L_idx[i]] - d[coord[0]][coord[0]]);
+        }
+        /*Add new node to L*/
+        L[last_id] = node_i;
+        L_idx[n_L++] = last_id;
     }
+    /*Join last two*/
+    L[L_idx[0]]->nbrs[L[L_idx[0]]->n_nbrs++] = L[L_idx[1]];
+    L[L_idx[1]]->nbrs[L[L_idx[1]]->n_nbrs++] = L[L_idx[0]];
+    L[L_idx[0]]->edge_dists[L[L_idx[0]]->n_nbrs - 1] = d[L_idx[0]][L_idx[1]];
+    L[L_idx[1]]->edge_dists[L[L_idx[1]]->n_nbrs - 1] = d[L_idx[0]][L_idx[1]];
     /*Freeing memory*/
     free(L);
-    for (i = 0; i < 2*m; i++) { free(D[i]); }
-    free(D);
     free(r);
     for (i = 0; i < 2*m; i++) { free(d[i]); }
     free(d);
 
-    /*Assuming cell[m] is root*/
-    return 0;
+    return root;
 }
 
 void update_r(long double* r, Node** L, long double** d, int* idx, int n_L) {
@@ -99,8 +129,9 @@ void update_r(long double* r, Node** L, long double** d, int* idx, int n_L) {
     return;
 }
 
-void update_D(long double** D, Node** L, long double** d, long double* r, int* idx, int n_L) {
-    int i, j, a, b;
+void min_D(int* out, Node** L, long double** d, long double* r, int* idx, int n_L) {
+    int i, j, a, b, min_i, min_j;
+    long double D, min_val = INFINITY;
     for (a = 0; a < n_L; a++) {
         /*Node i is active*/
         i = idx[a];
@@ -108,28 +139,29 @@ void update_D(long double** D, Node** L, long double** d, long double* r, int* i
             /*As is j*/
             j = idx[b];
             if (i == j) {
-                D[i][j] = D[j][i] = INFINITY;
+                continue;
             }
-            else {
-                D[j][i] = D[i][j] = d[i][j] - r[i] - r[j];
+            D = d[i][j] - r[i] - r[j];
+            if (D < min_val) {
+                min_val = D;
+                min_i = i;
+                min_j = j;
             }
         }
     }
+    out[0] = min_i;
+    out[1] = min_j;
     return;
 }
 
 
 
 /*
- Node;
 typedef struct Node {
-    long double d_parent, d_l_child, d_r_child;
+    long double d_0, d_1, d_2;
     long double pi_0, pi_1, pi_2;
-    struct Node* nbr_0; 
-    struct Node* nbr_1; 
-    struct Node* nbr_2; 
+    struct Node* nbrs[3]; After rooting: parent, left child, right child
     int id, n_nbrs;
     char  is_root, is_cell;
 } Node;
-
 */
