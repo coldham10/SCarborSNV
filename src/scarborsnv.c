@@ -85,17 +85,25 @@ int main(int argc, char** argv) {
     /*Done reading pileup file*/
     if (gp->mp_isfile) { fclose(instream); }
     fprintf(stderr, "Found %ld candidate loci ", candidates_found);
-    fprintf(stderr, "of which %d had more than one valid cell\n", sqr_mat_sum(p_bar_denominators, m)/2);
+    fprintf(stderr, "over which %d cell pairs were sequenced at the same locus\n", sqr_mat_sum(p_bar_denominators, m)/2);
     /*Compute additive tree distances*/
     distance_matrix = malloc((m + 1) * sizeof(long double*));
     for (i = 0; i < m + 1; i++) { distance_matrix[i] = malloc((m + 1) * sizeof(long double)); }
-    expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m + 1);
+    i = expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m + 1);
+    /*TODO deal with this*/
+    if (i != 0) { fprintf(stderr, "Lack of homology between some cells\n"); }
     /*Freeing old matrices*/
     for (i = 0; i < m + 1; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
     for (i = 0; i < m + 1; i++) { free(p_bar_denominators[i]); }
     free(p_bar_denominators);
     /* TODO */
+    for (i = 0; i < m + 1; i++) {
+        for (int j = 0; j < m + 1; j++) {
+            printf("%Lf\t", distance_matrix[i][j]);
+        }
+        printf("\n");
+    }
 
 
     /*Freeing memory, closing files*/
