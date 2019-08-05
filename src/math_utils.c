@@ -104,6 +104,15 @@ long double l_binom_dist2(int m, int g, int sig) {
     return values[sig*3 + g];
 }
 
+int sqr_mat_sum(int** matrix, int m) {
+    int i, j, sum = 0;
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < m; j++) {
+            sum += matrix[i][j];
+        }
+    }
+    return sum;
+}
 
 void free_log_factorials() {
     /*Special signal*/

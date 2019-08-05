@@ -84,7 +84,8 @@ int main(int argc, char** argv) {
     free(loci_batch);
     /*Done reading pileup file*/
     if (gp->mp_isfile) { fclose(instream); }
-    fprintf(stderr, "Found %ld candidate loci\n", candidates_found);
+    fprintf(stderr, "Found %ld candidate loci ", candidates_found);
+    fprintf(stderr, "of which %d had more than one valid cell\n", sqr_mat_sum(p_bar_denominators, m)/2);
     /*Compute additive tree distances*/
     distance_matrix = malloc((m + 1) * sizeof(long double*));
     for (i = 0; i < m + 1; i++) { distance_matrix[i] = malloc((m + 1) * sizeof(long double)); }
@@ -233,7 +234,7 @@ int update_candidates(Locus* loci_batch,
                 }
                 numr[a][p->m] = numr[p->m][a]
                     = LSE2(logl(2) + genotype_posteriors[3*a + 2], genotype_posteriors[3*a + 1]);
-               denom[a][m]++; denom[m][a]++; 
+               denom[a][p->m]++; denom[p->m][a]++; 
             }
         }
         free(l_P_sig__D[i]);
