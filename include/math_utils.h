@@ -10,8 +10,6 @@ long double l_binom_coeff(int n, int k);
 /* Returns log probability of g from binomial distribution B(2, sig/2m)
  * Keeps static memory, call free_log_binom() */
 long double l_binom_dist2(int m, int g, int sig);
-/*Sums ints in a square m*m matrix*/
-int sqr_mat_sum(int** matrix, int m);
 /*Factorial values are memoized, so this function frees that memory*/
 void free_log_factorials();
 void free_log_binom();

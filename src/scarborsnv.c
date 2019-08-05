@@ -59,11 +59,11 @@ int main(int argc, char** argv) {
     /* Compute 2m+1 sigma priors and place in P_sigma */
     P_sigma = malloc((2*m + 1) * sizeof(long double));
     log_sigma_priors(p0, P_sigma);
-    /*Two mxm matrices for computing pairwise p-bar*/
-    p_bar_numerators = malloc(m * sizeof(long double*));
-    for (i = 0; i < m; i++) { p_bar_numerators[i] = calloc(m , sizeof(long double)); }
-    p_bar_denominators = malloc(m * sizeof(int*));
-    for (i = 0; i < m; i++) { p_bar_denominators[i] = calloc(m , sizeof(int)); }
+    /*Two (m+1)x(m+1) matrices for computing pairwise p-bar, (incl. root)*/
+    p_bar_numerators = malloc((m + 1) * sizeof(long double*));
+    for (i = 0; i < m + 1; i++) { p_bar_numerators[i] = calloc(m + 1, sizeof(long double)); }
+    p_bar_denominators = malloc((m + 1) * sizeof(int*));
+    for (i = 0; i < m + 1; i++) { p_bar_denominators[i] = calloc(m + 1, sizeof(int)); }
     /* Retrieve & process loci in batches, identify and store candidates*/
     Locus* loci_batch = malloc(LOCUS_BATCH_SIZE * sizeof(Locus));
     while (1) {
@@ -84,22 +84,21 @@ int main(int argc, char** argv) {
     free(loci_batch);
     /*Done reading pileup file*/
     if (gp->mp_isfile) { fclose(instream); }
-    fprintf(stderr, "Found %ld candidate loci ", candidates_found);
-    fprintf(stderr, "of which %d had more than one valid cell\n", sqr_mat_sum(p_bar_denominators, m)/2);
+    fprintf(stderr, "Found %ld candidate loci\n", candidates_found);
     /*Compute additive tree distances*/
-    distance_matrix = malloc(m * sizeof(long double*));
-    for (i = 0; i < m; i++) { distance_matrix[i] = malloc(m * sizeof(long double)); }
-    expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m);
+    distance_matrix = malloc((m + 1) * sizeof(long double*));
+    for (i = 0; i < m + 1; i++) { distance_matrix[i] = malloc((m + 1) * sizeof(long double)); }
+    expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m + 1);
     /*Freeing old matrices*/
-    for (i = 0; i < m; i++) { free(p_bar_numerators[i]); }
+    for (i = 0; i < m + 1; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
-    for (i = 0; i < m; i++) { free(p_bar_denominators[i]); }
+    for (i = 0; i < m + 1; i++) { free(p_bar_denominators[i]); }
     free(p_bar_denominators);
     /* TODO */
 
 
     /*Freeing memory, closing files*/
-    for (i = 0; i < m; i++) { free(distance_matrix[i]); }
+    for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
     free(distance_matrix);
     free(p0); free(gp);
     free(P_sigma);
@@ -179,7 +178,7 @@ int update_candidates(Locus* loci_batch,
         FILE* candidates_file,
         long double** numr,
         int** denom) {
-    int i, j, k, n_valid_cells;
+    int i, j, k, a, b, n_valid_cells;
     long double pair_exp_diff;
     int candidates_found = 0;
     long double* genotype_posteriors;
@@ -222,20 +221,19 @@ int update_candidates(Locus* loci_batch,
                     valid_cells[n_valid_cells++] = j;
                 }
             }
-            if (n_valid_cells < 2) {
-                /*Cannot compute pairwise distances if no valid pairs*/
-                free(l_P_sig__D[i]);
-                free(cell_ls[i]);
-                continue;
-            }
             /*Iterate through pairs of valid cells*/
             for (j = 0; j < n_valid_cells; j++) {
+                a = valid_cells[j];
                 for (k = j+1; k < n_valid_cells; k++) {
-                    denom[j][k]++; denom[k][j]++;
-                    pair_exp_diff = pair_exp_difference(genotype_posteriors, valid_cells[j], valid_cells[k]);
-                    numr[j][k] = LSE2(numr[j][k], pair_exp_diff);
-                    numr[k][j] = numr[k][j];
+                    b = valid_cells[k];
+                    denom[a][b]++; denom[b][a]++;
+                    pair_exp_diff = pair_exp_difference(genotype_posteriors, a, b);
+                    numr[a][b] = LSE2(numr[a][b], pair_exp_diff);
+                    numr[a][b] = numr[b][a];
                 }
+                numr[a][p->m] = numr[p->m][a]
+                    = LSE2(logl(2) + genotype_posteriors[3*a + 2], genotype_posteriors[3*a + 1]);
+               denom[a][m]++; denom[m][a]++; 
             }
         }
         free(l_P_sig__D[i]);
