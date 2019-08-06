@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     long double** p_bar_numerators;
     long double** distance_matrix;
     int** p_bar_denominators;
+    Node* T;
     unsigned long candidates_found = 0;
     prior_params_t* p0 = malloc(sizeof(prior_params_t));
     global_params_t* gp = malloc(sizeof(global_params_t));
@@ -101,7 +102,6 @@ int main(int argc, char** argv) {
          * e.g. "Fast NJ-like algorithms to deal with incomplete distance matrices" --google.
          * This could be done in tree.c, too*/
     }
-    build_tree_nj(distance_matrix, m);
     /*Freeing old matrices*/
     for (i = 0; i < m + 1; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
@@ -109,15 +109,16 @@ int main(int argc, char** argv) {
     free(p_bar_denominators);
 
 
+    T = build_tree_nj(distance_matrix, m);
     /* TODO */
+    delete_tree(T);
+    /*FIXME delete this*/
     for (i = 0; i < m + 1; i++) {
         for (int j = 0; j < m + 1; j++) {
             printf("%Lf\t", distance_matrix[i][j]);
         }
         printf("\n");
     }
-
-
     /*Freeing memory, closing files*/
     for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
     free(distance_matrix);

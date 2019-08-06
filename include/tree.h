@@ -14,5 +14,6 @@ typedef struct Node {
  * be the expected Jukes Cantor distance between pairs of cells */
 int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** freq_denom, int m);
 Node* build_tree_nj(long double** dist_mat, int m);
+void delete_tree(Node* T);
 
 #endif

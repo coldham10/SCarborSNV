@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "tree.h"
+/*FIXME remove*/
+#include <assert.h>
 
 int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** freq_denom, int m) {
     int i, j;
@@ -23,7 +25,8 @@ int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** 
 }
 
 void update_r(long double*  r, Node** L, long double** d, int* idx, int n_L);
-void min_D(int* out, Node** L, long double** d, long double* r, int* idx, int n_L) {
+void min_D(int* out, Node** L, long double** d, long double* r, int* idx, int n_L);
+void root_tree(Node* T, Node* parent);
 
 Node* build_tree_nj(long double** dist_mat, int m) {
     /*Following notation in durbin et al. NB assumes full distance matrix*/
@@ -54,6 +57,7 @@ Node* build_tree_nj(long double** dist_mat, int m) {
         node_i->is_cell = 1;
         node_i->is_root = 0;
         node_i->n_nbrs  = 0;
+        node_i->nbrs[0] = node_i->nbrs[1] = node_i->nbrs[2] = NULL;
         L[i] = node_i;
     }
     /*Change root node*/
@@ -87,6 +91,8 @@ Node* build_tree_nj(long double** dist_mat, int m) {
         for (i = 0; i < n_L-2; i++) {
             if (L_idx[i+j] == coord[0] || L_idx[i+j] == coord[1]) {
                 j++;
+                i--;
+                continue;
             }
             L_idx[i] = L_idx[i+j];
         }
@@ -106,9 +112,11 @@ Node* build_tree_nj(long double** dist_mat, int m) {
     L[L_idx[1]]->edge_dists[L[L_idx[1]]->n_nbrs - 1] = d[L_idx[0]][L_idx[1]];
     /*Freeing memory*/
     free(L);
+    free(L_idx);
     free(r);
     for (i = 0; i < 2*m; i++) { free(d[i]); }
     free(d);
+    root_tree(root, NULL);
 
     return root;
 }
@@ -152,6 +160,46 @@ void min_D(int* out, Node** L, long double** d, long double* r, int* idx, int n_
     out[0] = min_i;
     out[1] = min_j;
     return;
+}
+
+void root_tree(Node* T, Node* parent) {
+    /*Reorganizes data so that the parent is the first neighbor*/
+    Node* temp_node;
+    long double temp_d;
+    int i;
+    if (T->is_cell) {
+        assert(T->nbrs[0] == parent);
+        return;
+    }
+    for(i = 0; i < 3; i++) {
+        if (T->nbrs[i] == parent) {
+            break;
+        }
+    }
+    assert(T->nbrs[i] == parent);
+    if (i != 0) {
+        temp_node = T->nbrs[0];
+        T->nbrs[0] = parent;
+        T->nbrs[i] = temp_node;
+        temp_d = T->edge_dists[0];
+        T->edge_dists[0] = T->edge_dists[i];
+        T->edge_dists[i] = temp_d;
+    }
+    root_tree(T->nbrs[1], T);
+    if (!T->is_root) {
+        root_tree(T->nbrs[2], T);
+    }
+    return;
+}
+
+void delete_tree(Node* T) {
+    if (!T->is_cell) {
+        delete_tree(T->nbrs[1]);
+        if (!T->is_root) {
+            delete_tree(T->nbrs[2]);
+        }
+    }
+    free(T);
 }
 
 
