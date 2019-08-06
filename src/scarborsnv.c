@@ -110,15 +110,9 @@ int main(int argc, char** argv) {
 
 
     T = build_tree_nj(distance_matrix, m);
+    print_tree(T);
     /* TODO */
     delete_tree(T);
-    /*FIXME delete this*/
-    for (i = 0; i < m + 1; i++) {
-        for (int j = 0; j < m + 1; j++) {
-            printf("%Lf\t", distance_matrix[i][j]);
-        }
-        printf("\n");
-    }
     /*Freeing memory, closing files*/
     for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
     free(distance_matrix);
@@ -137,8 +131,8 @@ int main(int argc, char** argv) {
 int write_candidate(FILE* c_file, Locus* locus, long double* probs, int m) {
     int i;
     /*Length of sequence name */
-    size_t seq_length = strlen(locus->sequence);
-    fwrite(&seq_length, sizeof(size_t), 1, c_file); 
+    int seq_length = strlen(locus->sequence);
+    fputc(seq_length, c_file);
     fwrite(locus->sequence, 1, seq_length + 1, c_file);
     fwrite(&(locus->position), sizeof(unsigned long), 1, c_file);
     for (i = 0; i < m; i++) {
@@ -147,7 +141,8 @@ int write_candidate(FILE* c_file, Locus* locus, long double* probs, int m) {
             continue;
         }
         fputc(1, c_file);
-        fwrite(probs + 3*i, sizeof(long double), 3, c_file);
+        /*FIXME this line sometimes gives uninitialized error, originating in math_utils.c binom_dist2*/
+        fwrite(&probs[3*i], sizeof(long double), 3, c_file);
     }
     return 0;
 }

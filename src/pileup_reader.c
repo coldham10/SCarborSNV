@@ -4,7 +4,7 @@
 #include "sequence_utils.h"
 
 /*Maximum length of sequence name*/
-#define L_SEQNAME (256)
+#define L_SEQNAME (255)
 
 char* dynamic_read(FILE* instream, char* read_buffer, size_t expected_size) {
     char c;

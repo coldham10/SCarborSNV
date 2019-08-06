@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "tree.h"
+#include <stdio.h>
 /*FIXME remove*/
 #include <assert.h>
 
@@ -58,6 +59,7 @@ Node* build_tree_nj(long double** dist_mat, int m) {
         node_i->is_root = 0;
         node_i->n_nbrs  = 0;
         node_i->nbrs[0] = node_i->nbrs[1] = node_i->nbrs[2] = NULL;
+        node_i->edge_dists[0] = node_i->edge_dists[1] = node_i->edge_dists[2] = NAN;
         L[i] = node_i;
     }
     /*Change root node*/
@@ -80,10 +82,20 @@ Node* build_tree_nj(long double** dist_mat, int m) {
         node_i->n_nbrs = 2;
         node_i->nbrs[0]->nbrs[node_i->nbrs[0]->n_nbrs++] = node_i;
         node_i->nbrs[1]->nbrs[node_i->nbrs[1]->n_nbrs++] = node_i;
-        /*Compute new distances*/
+        /*Compute branch lengths*/
         node_i->edge_dists[0] = 0.5 * (d[coord[0]][coord[1]] + r[coord[0]] - r[coord[1]]);
+        node_i->edge_dists[1] = 0.5 * (d[coord[0]][coord[1]] + r[coord[1]] - r[coord[0]]);
+        /*Correct negative branch lengths (Kuhner and Felsenstein, 1994)*/
+        if(node_i->edge_dists[0] < 0) {
+            node_i->edge_dists[1] += node_i->edge_dists[0];
+            node_i->edge_dists[0] = 0;
+        }
+        else if(node_i->edge_dists[1] < 0) {
+            node_i->edge_dists[0] += node_i->edge_dists[1];
+            node_i->edge_dists[1] = 0;
+        }
+        /*Make neighbours agree on branch lengths*/
         node_i->nbrs[0]->edge_dists[node_i->nbrs[0]->n_nbrs - 1] = node_i->edge_dists[0];
-        node_i->edge_dists[1] = d[coord[0]][coord[1]] - node_i->edge_dists[0];
         node_i->nbrs[1]->edge_dists[node_i->nbrs[1]->n_nbrs - 1] = node_i->edge_dists[1];
         /*Remove old nodes from active list*/
         L[coord[0]] = L[coord[1]] = NULL;
@@ -99,8 +111,9 @@ Node* build_tree_nj(long double** dist_mat, int m) {
         n_L -= 2;
         /*Compute distance of new node to remaining nodes in L*/
         for (i = 0; i < n_L; i++) {
-            d[last_id][L_idx[i]] = d[L_idx[i]][last_id] = 0.5 * (d[coord[0]][L_idx[i]] + d[coord[1]][L_idx[i]] - d[coord[0]][coord[0]]);
+            d[last_id][L_idx[i]] = d[L_idx[i]][last_id] = 0.5 * (d[coord[0]][L_idx[i]] + d[coord[1]][L_idx[i]] - d[coord[0]][coord[1]]);
         }
+        d[last_id][last_id] = 0;
         /*Add new node to L*/
         L[last_id] = node_i;
         L_idx[n_L++] = last_id;
@@ -117,7 +130,6 @@ Node* build_tree_nj(long double** dist_mat, int m) {
     for (i = 0; i < 2*m; i++) { free(d[i]); }
     free(d);
     root_tree(root, NULL);
-
     return root;
 }
 
@@ -201,6 +213,26 @@ void delete_tree(Node* T) {
     }
     free(T);
 }
+
+void print_tree(Node* T) {
+    if(T->is_cell) {
+        printf("%d", T->id);
+        return;
+    }
+    printf("(");
+    print_tree(T->nbrs[1]);
+    printf(":%.2Lf", T->edge_dists[1]);
+    if (!T->is_root) {
+        printf(",");
+        print_tree(T->nbrs[2]);
+        printf(":%.2Lf", T->edge_dists[2]);
+    }
+    printf(")");
+    if (T->is_root) { printf(";\n"); }
+}
+
+
+
 
 
 
