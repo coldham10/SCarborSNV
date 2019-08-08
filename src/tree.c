@@ -230,18 +230,3 @@ void print_tree(Node* T) {
     printf(")");
     if (T->is_root) { printf(";\n"); }
 }
-
-
-
-
-
-
-/*
-typedef struct Node {
-    long double d_0, d_1, d_2;
-    long double pi_0, pi_1, pi_2;
-    struct Node* nbrs[3]; After rooting: parent, left child, right child
-    int id, n_nbrs;
-    char  is_root, is_cell;
-} Node;
-*/

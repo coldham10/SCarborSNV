@@ -114,6 +114,11 @@ int sqr_mat_sum(int** matrix, int m) {
     return sum;
 }
 
+long double inverse_JC(long double d) {
+    long double log_p = logl(1-expl(-(4.0/3.0) * d));
+    return logl(3) - logl(4) + log_p;
+}
+
 void free_log_factorials() {
     /*Special signal*/
     log_factorial(FREE_MEM);

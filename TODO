@@ -1,22 +1,22 @@
 FEATURES
-Ignore 0 read depths
-    -in locus_likelihoods.c I set P(X|g) = P_ADO^2... how legit is this?
-        -Seems to give plausible results for P(D|sig), but will need to prove in paper...
-        -Empirically, if we have m cells and m-1 are X but 1 is strongly g=2 then posterior distribution should have large tail, not be focused on 0.
-        -Even if m is large
 Error checking for wromg m value in cmdline
+deal with incomplete dist matrix
+    remove orphans
+    impute based on 10.1186/1471-2105-9-166 (DOI)
 
 
 BUGS
 data with ! quality too common in test. Is this normal? Reject or use?
 Negative branch lengths! For bigtest this is between root and node. If set to 0, P(clonal mutations) = P(SNV) = 0!!
     -Perhaps adjust this root length by having sum(otherlengths)/root length = lambda/mu ??
-valgrind uninitialized errors. I'm dubious...
+valgrind uninitialized errors. I'm dubious... they don't show up when compiled on ARM
 
 
 TESTING
 output batches to new pileup file and use diff to make sure threy are the same
 use valgrind massif to make sure memory usage doesn't swell
+parameters & missing vals
+    -in locus_likelihoods.c I set P(X|g) = P_ADO^2... how legit is this?
 
 
 

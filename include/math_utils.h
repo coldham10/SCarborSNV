@@ -12,6 +12,8 @@ long double l_binom_coeff(int n, int k);
 long double l_binom_dist2(int m, int g, int sig);
 /*Sums ints in a square m*m matrix*/
 int sqr_mat_sum(int** matrix, int m);
+/*Returns log of p_bar from a Jukes-Cantor distance d*/
+long double inverse_JC(long double d);
 /*Factorial values are memoized, so this function frees that memory*/
 void free_log_factorials();
 void free_log_binom();
