@@ -10,10 +10,12 @@
 #include "likelihoods.h"
 #include "posteriors.h"
 #include "tree.h"
+#include "inference.h"
 
 #define LOCUS_BATCH_SIZE (10)
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
+long double read_candidate(FILE* c_file, Candidate cand);
 int update_candidates(Locus* loci_batch,
         int batch_size,
         prior_params_t* p0,
@@ -30,8 +32,9 @@ int main(int argc, char** argv) {
     long double** p_bar_numerators;
     long double** distance_matrix;
     int** p_bar_denominators;
-    Node* T;
     unsigned long candidates_found = 0;
+    Node* T;
+    Candidate* candidate;
     prior_params_t* p0 = malloc(sizeof(prior_params_t));
     global_params_t* gp = malloc(sizeof(global_params_t));
     /*Uses getopt to parse cl parameters */
@@ -92,25 +95,28 @@ int main(int argc, char** argv) {
     if (gp->mp_isfile) { fclose(instream); }
     fprintf(stderr, "Found %ld candidate loci\n", candidates_found);
     fprintf(stderr, "%d pairwise comparisons made between cells to infer phylogeny\n", sqr_mat_sum(p_bar_denominators, m)/2);
-    /*Compute additive tree distances*/
+    /*Compute tree distances*/
     distance_matrix = malloc((m + 1) * sizeof(long double*));
     for (i = 0; i < m + 1; i++) { distance_matrix[i] = malloc((m + 1) * sizeof(long double)); }
+    /*TODO orphan unsupported cells, update raw dists, m, etc*/
     i = expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m + 1);
     if (i != 0) {
         fprintf(stderr, "Failed to find all pairwise distances. Some cells may share no overlapping loci\n");
-        /*TODO orphan some cells if no relation? and if this doesn't fix it, investigate imputation
-         * e.g. "Fast NJ-like algorithms to deal with incomplete distance matrices" --google.
-         * This could be done in tree.c, too*/
+         /* If still nans after orphaning e.g. "Fast NJ-like algorithms to deal with incomplete distance matrices" --google.*/
     }
     /*Freeing old matrices*/
     for (i = 0; i < m + 1; i++) { free(p_bar_numerators[i]); }
     free(p_bar_numerators);
     for (i = 0; i < m + 1; i++) { free(p_bar_denominators[i]); }
     free(p_bar_denominators);
-
-
+    /*Build the tree*/
     T = build_tree_nj(distance_matrix, m);
     print_tree(T);
+    /*Iterate through candidate loci to call variants*/
+    candidate = malloc(sizeof(Candidate));
+    candidate->m = m;
+    rewind(f_candidates);
+    read_candidate(f_candidates, candidate);
     /* TODO */
     delete_tree(T);
     /*Freeing memory, closing files*/
@@ -128,49 +134,41 @@ int main(int argc, char** argv) {
 }
 
 /* Stores candidate loci posterior distributions in a binary file */
-int write_candidate(FILE* c_file, Locus* locus, long double* probs, int m) {
+int write_candidate(FILE* c_file, Locus* locus, long double P_0, long double* probs, int m) {
     int i;
+    char is_valid;
     /*Length of sequence name */
     int seq_length = strlen(locus->sequence);
-    fputc(seq_length, c_file);
-    fwrite(locus->sequence, 1, seq_length + 1, c_file);
+    fwrite(&seq_length, sizeof(int), 1, c_file);
+    fwrite(locus->sequence, 1, seq_length, c_file);
+    fputc('\0', c_file);
     fwrite(&(locus->position), sizeof(unsigned long), 1, c_file);
+    fwrite(&P_0, sizeof(long double), 1, c_file);
     for (i = 0; i < m; i++) {
-        if (locus->cells[i].read_count < 1) {
-            fputc(0, c_file);
-            continue;
-        }
-        fputc(1, c_file);
-        /*FIXME this line sometimes gives uninitialized error, originating in math_utils.c binom_dist2*/
-        fwrite(&probs[3*i], sizeof(long double), 3, c_file);
+        is_valid = (locus->cells[i].read_count > 0) ? 1 : 0;
+        fputc(is_valid, c_file);
+        fwrite(probs + 3*i, sizeof(long double), 3, c_file);
     }
     return 0;
 }
-//
-//int read_candidate(FILE* c_file, Locus* locus, long double* probs, int m) {
-//    int i;
-//    size_t seq_length;
-//    char sequence
-//    fread(&seq_length, sizeof(size_t), 1, c_file);
-//    fread(locus->sequence, 1, seq_length + 1, c_file);
-//    fwrite(&(locus->position), sizeof(unsigned long), 1, c_file);
-//    for (i = 0; i < m; i++) {
-//        if (locus->cells[i].read_count < 1) {
-//            fputc(0, c_file);
-//            continue;
-//        }
-//        fputc(1, c_file);
-//        fwrite(probs, sizeof(long double), 3*m, c_file);
-//    }
-//    /* ASCII:
-//    fprintf(c_file, "%s\t%lu\t", locus->sequence, locus->position);
-//    for (i = 0; i < 3*m; i++) {
-//        fprintf(c_file, "%Lf\t", expl(probs[i]));
-//    }
-//    fprintf(c_file, "\n");
-//    */
-//    return 0;
-//}
+
+int read_candidate(FILE* c_file, Candidate* candidate) {
+    int seq_length, i;
+    fread(&seq_length, sizeof(int), 1, c_file);
+    candidate->seq_name = malloc(seq_length + 1);
+    fread(candidate->seq_name, 1, seq_length + 1, c_file);
+    fread(&(candidate->pos), sizeof(unsigned long), 1, c_file);
+    fread(&(candidate->P_sig0), sizeof(long double), 1, c_file);
+    for (i = 0; i < m; i++) {
+        valid[i] = fgetc(c_file);
+        fread(probs + 3*i, sizeof(long double), 3, c_file);
+        /*FIXME to candidate*/
+    }
+    
+    free(sequence);
+    return 0;
+}
+
 /*The expected number of alleles that differ between the two cells at a locus*/
 long double pair_exp_difference(long double* posteriors, int a, int b) {
     long double to_sum[6];
@@ -229,7 +227,7 @@ int update_candidates(Locus* loci_batch,
         cell_posteriors(genotype_posteriors, l_P_sig__D[i], cell_ls[i], p->m);
         if (l_P_sig__D[i][0] <= p->thresh) {
             candidates_found++;
-            write_candidate(candidates_file, &(loci_batch[i]), genotype_posteriors, p->m);
+            write_candidate(candidates_file, &(loci_batch[i]), l_P_sig__D[i][0], genotype_posteriors, p->m);
         }
         /*P_bar calculations for building cell distances*/
         n_valid_cells = 0;

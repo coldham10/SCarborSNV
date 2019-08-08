@@ -20,7 +20,6 @@ int upwards_step(Node* T, long double* posteriors) {
         }
         /*pi_mu*/
         T->pi[0] = LSE2(T->pi[1], T->pi[2]);
-        }
     }
     else {
         /*Make sure cells below are complete*/
@@ -29,6 +28,7 @@ int upwards_step(Node* T, long double* posteriors) {
         /*Update pi_g and pi_mu from children (log space)*/
         for (i = 0; i < 4; i++) {
             T->pi[i] = T->nbrs[1]->pi[i] + T->nbrs[2]->pi[i];
+        }
     }
     /*Node specific values*/
     T->p_bar = inverse_JC(T->edge_dists[0]);
@@ -49,7 +49,7 @@ int upwards_step(Node* T, long double* posteriors) {
         /*Partial sum of aux0 (p_bar * pi_2/pi_0)*/
         to_sum[0] = T->nbrs[1]->sum_aux0;
         to_sum[1] = T->nbrs[2]->sum_aux0;
-        to_sum[2] = T->aux_0;
+        to_sum[2] = T->aux0;
         T->sum_aux0 = LSE(to_sum, 3);
         /*Overall sum on W^(3)(L)*/
         to_sum[0] = T->nbrs[1]->sum_W3;
@@ -80,7 +80,7 @@ int downwards_step(Node* T) {
     /*Downwards partial sums/product*/ 
     T->sum_P_Se = LSE2(T->P_Se, T->nbrs[0]->sum_P_Se);
     T->sum_aux1 = LSE2(T->aux1, T->nbrs[0]->sum_aux1);
-    T->partial_prod = T->nbrs[0]->partial_prod + logl(1-expl(T->P_se));
+    T->partial_prod = T->nbrs[0]->partial_prod + logl(1-expl(T->P_Se));
     /*More local values*/
     T->W_SL[0] = T->p_bar + T->pi[0] - T->pi[1] + T->sum_aux1;
     T->W_SL[1] = T->p_bar + T->pi[2] - T->pi[1] + T->sum_aux1;
@@ -106,15 +106,13 @@ int downwards_step(Node* T) {
 }
 
 int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_LOH) {
-    /*Three cases*/
     long double P_SNV_e;
     long double P_Le__S[3];
     long double to_sum[4];
     if(T->is_root) {
         /*Root genotype is taken to be definitely 0*/
-        /*TODO between root and first node should include HWE approximation for other genotypes based on lambda/mu*/
         T->P_g[0] = logl(1);
-        T->P_g[1] = T->P_g[2] = T->P_g[3] = T->logl(0);
+        T->P_g[1] = T->P_g[2] = T->P_g[3] = logl(0);
         T->P_silent = logl(0);
         DP_genotypes(T->nbrs[1], result, P_SNV, P_LOH);
         return 0;
@@ -124,7 +122,6 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     T->sum_W_SL[1] = T->nbrs[0]->sum_W_SL[1];
     T->sum_W3      = T->nbrs[0]->sum_W3;
     /*Calculate conditional probabilities*/
-    /*XXX make sure leaves done correctly*/
     P_SNV_e    = P_SNV + T->P_Se;
     P_Le__S[0] = P_LOH - logl(3) + T->W_SL[0] - T->sum_W_SL[0] - T->sum_P_Se; /*Case 1*/
     P_Le__S[1] = P_LOH - logl(3) + T->W_SL[1] - T->sum_W_SL[1] - T->sum_P_Se; /*Case 2*/
@@ -143,15 +140,32 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     /*P(g=2)*/
     to_sum[0] = T->nbrs[0]->P_g[3] + P_SNV_e; /*Silently haploid cell mutates to "homozygous" alt*/
     to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[1]; /*XXX also divide here by two?*/
-    T->
+    to_sum[2] = T->nbrs[0]->P_g[1] + P_Le__S[1];
+    to_sum[3] = T->nbrs[0]->P_g[2];
+    T->P_g[2] = LSE(to_sum, 4);
     /*P(g=0 Haploid)*/
-
-
+    to_sum[0] = T->nbrs[0]->P_g[3] + logl(1-expl(P_SNV_e));
+    to_sum[1] = T->nbrs[0]->P_g[0] + P_Le__S[2];
+    T->P_g[3] = LSE2(to_sum[0], to_sum[1]);
+    if (T->is_cell) {
+        result[3*T->id + 0] = LSE2(T->P_g[0], T->P_g[3]);
+        result[3*T->id + 1] = T->P_g[1];
+        result[3*T->id + 2] = T->P_g[2];
+    }
+    else {
+        DP_genotypes(T->nbrs[1], result, P_SNV, P_LOH);
+        DP_genotypes(T->nbrs[2], result, P_SNV, P_LOH);
+    }
+    return 0;
 }
+
+
+
 
 int infer_from_phylogeny(Node* T, long double* posteriors, long double* result, long double P_SNV, long double P_H) {
     upwards_step(T, posteriors);
     downwards_step(T);
     DP_genotypes(T, result, P_SNV, P_H);
+    return 0;
 }
 

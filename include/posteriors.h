@@ -1,6 +1,17 @@
 #ifndef POSTERIORS_H_
 #define POSTERIORS_H_
 
+typedef struct {
+    long double P_0;
+    unsigned long pos;
+    int m;
+    char* seq_name;
+    char* valid_cells;
+    long double* simple_posteriors;
+    long double*  phylo_posteriors;
+} Candidate;
+
+
 /*Posterior distribution over sigma P(sigma|D) for a locus 
  * priors are original sigma priors and likelihoods  are locus likelihoods P(D|sigma)*/
 int sigma_posteriors(long double* posteriors, long double* priors, long double* likelihoods, int m);
