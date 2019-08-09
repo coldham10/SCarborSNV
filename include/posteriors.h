@@ -2,7 +2,7 @@
 #define POSTERIORS_H_
 
 typedef struct {
-    long double P_0;
+    long double P_0, P_SNV;
     unsigned long pos;
     int m;
     char* seq_name;

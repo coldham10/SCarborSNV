@@ -21,7 +21,6 @@ typedef struct Node {
     long double W_SL[2]; /*L is current edge, un_normalized partial sum of W(S_e', L_e)*/
     /*Genotype flowdown subproblem objectives*/
     long double P_g[4]; /*Genotype 4 is haploid reference*/
-    long double P_silent;
 } Node;
 
     

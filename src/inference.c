@@ -19,7 +19,7 @@ int upwards_step(Node* T, long double* posteriors) {
             T->pi[i] = posteriors[3 * T->id + i];
         }
         /*pi_mu*/
-        T->pi[0] = LSE2(T->pi[1], T->pi[2]);
+        T->pi[3] = LSE2(T->pi[1], T->pi[2]);
     }
     else {
         /*Make sure cells below are complete*/
@@ -113,7 +113,6 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
         /*Root genotype is taken to be definitely 0*/
         T->P_g[0] = logl(1);
         T->P_g[1] = T->P_g[2] = T->P_g[3] = logl(0);
-        T->P_silent = logl(0);
         DP_genotypes(T->nbrs[1], result, P_SNV, P_LOH);
         return 0;
     }

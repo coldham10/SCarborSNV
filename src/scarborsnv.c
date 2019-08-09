@@ -15,7 +15,8 @@
 #define LOCUS_BATCH_SIZE (10)
 
 void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv);
-long double read_candidate(FILE* c_file, Candidate cand);
+int read_candidate(FILE* c_file, Candidate* cand);
+void free_candidate_contents(Candidate* candidate);
 int update_candidates(Locus* loci_batch,
         int batch_size,
         prior_params_t* p0,
@@ -116,10 +117,14 @@ int main(int argc, char** argv) {
     candidate = malloc(sizeof(Candidate));
     candidate->m = m;
     rewind(f_candidates);
-    read_candidate(f_candidates, candidate);
-    /* TODO */
-    delete_tree(T);
+    while(read_candidate(f_candidates, candidate)) {
+        infer_from_phylogeny(T, candidate->simple_posteriors, candidate->phylo_posteriors, candidate->P_SNV, p0->l_P_H);
+        /*TODO*/
+        free_candidate_contents(candidate);
+    }
     /*Freeing memory, closing files*/
+    delete_tree(T);
+    free(candidate);
     for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
     free(distance_matrix);
     free(p0); free(gp);
@@ -127,8 +132,7 @@ int main(int argc, char** argv) {
     free_log_factorials();
     free_log_binom();
     fclose(f_candidates);
-    //FIXME uncomment after debugging
-    //remove(gp->tmp_fname);
+    remove(gp->tmp_fname);
 
     return 0;
 }
@@ -154,19 +158,35 @@ int write_candidate(FILE* c_file, Locus* locus, long double P_0, long double* pr
 
 int read_candidate(FILE* c_file, Candidate* candidate) {
     int seq_length, i;
-    fread(&seq_length, sizeof(int), 1, c_file);
+    int m = candidate->m;
+    /*Allocate memory for within Candidate struct*/
+    if (fread(&seq_length, sizeof(int), 1, c_file) == 0) { return 0; }
+    candidate->valid_cells = malloc(m);
+    candidate->simple_posteriors = malloc(3 * m * sizeof(long double));
+    candidate->phylo_posteriors  = malloc(3 * m * sizeof(long double));
     candidate->seq_name = malloc(seq_length + 1);
+    /*Read into newly alloc'd memory*/
     fread(candidate->seq_name, 1, seq_length + 1, c_file);
+    candidate->seq_name[seq_length] = '\0';
     fread(&(candidate->pos), sizeof(unsigned long), 1, c_file);
-    fread(&(candidate->P_sig0), sizeof(long double), 1, c_file);
-    for (i = 0; i < m; i++) {
-        valid[i] = fgetc(c_file);
-        fread(probs + 3*i, sizeof(long double), 3, c_file);
-        /*FIXME to candidate*/
+    fread(&(candidate->P_0), sizeof(long double), 1, c_file);
+    candidate->P_SNV = logl(1-expl(candidate->P_0));
+    for (i = 0; i < candidate->m; i++) {
+        candidate->valid_cells[i] = (char)fgetc(c_file);
+        fread(candidate->simple_posteriors + 3*i,
+                sizeof(long double),
+                3,
+                c_file);
     }
-    
-    free(sequence);
-    return 0;
+    return 1;
+}
+
+void free_candidate_contents(Candidate* candidate) {
+    free(candidate->simple_posteriors);
+    free(candidate->phylo_posteriors);
+    free(candidate->valid_cells);
+    free(candidate->seq_name);
+    return;
 }
 
 /*The expected number of alleles that differ between the two cells at a locus*/
