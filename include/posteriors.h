@@ -1,6 +1,8 @@
 #ifndef POSTERIORS_H_
 #define POSTERIORS_H_
 
+#include "scarborsnv.h"
+
 typedef struct {
     long double P_0, P_SNV;
     unsigned long pos;
@@ -9,6 +11,7 @@ typedef struct {
     char* valid_cells;
     long double* simple_posteriors;
     long double*  phylo_posteriors;
+    nuc_t ref, alt;
 } Candidate;
 
 

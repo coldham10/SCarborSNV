@@ -93,7 +93,6 @@ int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_
             /*TODO test this */
             i--;
             continue;
-
         }
         /*Normal read */
         else {
@@ -101,7 +100,6 @@ int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_
             processed_quals[i] = char2l_err(*(qual_ptr++));
         }
     } /*End for */
-
     if (*qual_ptr != '\0' || *read_ptr != '\0') {
         /*Could have characters beyond final valid read if indel or sequence markers */
         if (*read_ptr == '$' || *read_ptr == '^' || *read_ptr == '+' || *read_ptr == '-') return 0;
@@ -109,17 +107,45 @@ int clean_fill(int read_depth, nuc_t ref, char* raw_reads, char* raw_quals, nuc_
     }
     return 0;
 }
-            
-/*
-char sequence_utils::base2char(nuc_t base) {
+
+nuc_t get_alt_allele(Locus* locus, nuc_t ref, int m) {
+    int i, j, maxc;
+    int counts[4] = {0, 0, 0, 0};
+    for (i = 0; i < m; i++) {
+        for (j = 0; j < locus->cells[i].read_count; j++) {
+            switch (locus->cells[i].reads[j]) {
+                case 0 : counts[0]++;
+                         break;
+                case 1 : counts[1]++;
+                         break;
+                case 2 : counts[2]++;
+                         break;
+                case 3 : counts[3]++;
+                         break;
+            }
+        }
+    }
+    j = maxc = -1;
+    for (i = 0; i < 4; i++) {
+        if ((counts[i] > maxc) && ((int)ref != i)) {
+            j = i;
+            maxc = counts[i];
+        }
+    }
+
+    return (nuc_t)j;
+}
+
+    
+
+char base2char(nuc_t base) {
     switch(base)  {
-        case A : return 'A';
-        case C : return 'C';
-        case G : return 'G';
-        case T : return 'T';
-        case UNKNOWN_NUC : return 'N';
-        case INVALID_NUC : return 'X';
+        case 0 : return 'A';
+        case 1 : return 'C';
+        case 2 : return 'G';
+        case 3 : return 'T';
+        case 4 : return 'X';
+        case 6 : return 'N';
     }
     return 'Z';
 }
-*/

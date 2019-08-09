@@ -5,12 +5,14 @@
 #include <getopt.h>
 #include "scarborsnv.h"
 #include "math_utils.h"
+#include "sequence_utils.h"
 #include "sigma_priors.h"
 #include "pileup_reader.h"
 #include "likelihoods.h"
 #include "posteriors.h"
 #include "tree.h"
 #include "inference.h"
+#include "call_variants.h"
 
 #define LOCUS_BATCH_SIZE (10)
 
@@ -30,6 +32,7 @@ int main(int argc, char** argv) {
     long double* P_sigma;
     FILE* instream;
     FILE* f_candidates;
+    FILE* f_vcf;
     long double** p_bar_numerators;
     long double** distance_matrix;
     int** p_bar_denominators;
@@ -92,6 +95,7 @@ int main(int argc, char** argv) {
         delete_locus_contents(loci_batch, n_loci_read, m);
     }
     free(loci_batch);
+    free(P_sigma);
     /*Done reading pileup file*/
     if (gp->mp_isfile) { fclose(instream); }
     fprintf(stderr, "Found %ld candidate loci\n", candidates_found);
@@ -112,33 +116,44 @@ int main(int argc, char** argv) {
     free(p_bar_denominators);
     /*Build the tree*/
     T = build_tree_nj(distance_matrix, m);
+    for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
+    free(distance_matrix);
     print_tree(T);
+    f_vcf = fopen(gp->vcf_fname,"w");
+    if (f_candidates == NULL) {
+        free(p0); free(gp);
+        delete_tree(T);
+        free_log_factorials();
+        free_log_binom();
+        fclose(f_candidates);
+        fprintf(stderr, "Could not open vcf file\n");
+        abort();
+    }
+    /*TODO write vcf header*/
     /*Iterate through candidate loci to call variants*/
     candidate = malloc(sizeof(Candidate));
     candidate->m = m;
     rewind(f_candidates);
     while(read_candidate(f_candidates, candidate)) {
         infer_from_phylogeny(T, candidate->simple_posteriors, candidate->phylo_posteriors, candidate->P_SNV, p0->l_P_H);
-        /*TODO*/
+        call_to_VCF(f_vcf, candidate, gp->pc_thresh);
         free_candidate_contents(candidate);
     }
     /*Freeing memory, closing files*/
+    free(p0); free(gp);
     delete_tree(T);
     free(candidate);
-    for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
-    free(distance_matrix);
-    free(p0); free(gp);
-    free(P_sigma);
     free_log_factorials();
     free_log_binom();
     fclose(f_candidates);
+    fclose(f_vcf);
     remove(gp->tmp_fname);
-
     return 0;
 }
 
 /* Stores candidate loci posterior distributions in a binary file */
-int write_candidate(FILE* c_file, Locus* locus, long double P_0, long double* probs, int m) {
+int write_candidate(FILE* c_file, Locus* locus, long double P_0, long double* probs, nuc_t ref, nuc_t alt, int m) {
+    /*TODO read and write alt*/
     int i;
     char is_valid;
     /*Length of sequence name */
@@ -147,6 +162,8 @@ int write_candidate(FILE* c_file, Locus* locus, long double P_0, long double* pr
     fwrite(locus->sequence, 1, seq_length, c_file);
     fputc('\0', c_file);
     fwrite(&(locus->position), sizeof(unsigned long), 1, c_file);
+    fwrite(&ref, sizeof(nuc_t), 1, c_file);
+    fwrite(&alt, sizeof(nuc_t), 1, c_file);
     fwrite(&P_0, sizeof(long double), 1, c_file);
     for (i = 0; i < m; i++) {
         is_valid = (locus->cells[i].read_count > 0) ? 1 : 0;
@@ -169,6 +186,8 @@ int read_candidate(FILE* c_file, Candidate* candidate) {
     fread(candidate->seq_name, 1, seq_length + 1, c_file);
     candidate->seq_name[seq_length] = '\0';
     fread(&(candidate->pos), sizeof(unsigned long), 1, c_file);
+    fread(&(candidate->ref), sizeof(nuc_t), 1, c_file);
+    fread(&(candidate->alt), sizeof(nuc_t), 1, c_file);
     fread(&(candidate->P_0), sizeof(long double), 1, c_file);
     candidate->P_SNV = logl(1-expl(candidate->P_0));
     for (i = 0; i < candidate->m; i++) {
@@ -214,6 +233,7 @@ int update_candidates(Locus* loci_batch,
         long double** numr,
         int** denom) {
     int i, j, k, a, b, n_valid_cells;
+    nuc_t alt;
     long double pair_exp_diff;
     int candidates_found = 0;
     long double* genotype_posteriors;
@@ -245,9 +265,10 @@ int update_candidates(Locus* loci_batch,
     genotype_posteriors = malloc(3 * p->m * sizeof(long double));
     for (i = 0; i < batch_size; i++) {
         cell_posteriors(genotype_posteriors, l_P_sig__D[i], cell_ls[i], p->m);
-        if (l_P_sig__D[i][0] <= p->thresh) {
+        if (l_P_sig__D[i][0] <= p->c_thresh) {
             candidates_found++;
-            write_candidate(candidates_file, &(loci_batch[i]), l_P_sig__D[i][0], genotype_posteriors, p->m);
+            alt = get_alt_allele(&(loci_batch[i]), loci_batch[i].ref_base, p->m);
+            write_candidate(candidates_file, &(loci_batch[i]), l_P_sig__D[i][0], genotype_posteriors, loci_batch[i].ref_base, alt, p->m);
         }
         /*P_bar calculations for building cell distances*/
         n_valid_cells = 0;
@@ -294,8 +315,10 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     /*These initial values are taken from the monovar source*/
     double P_amplification_err = 0.002;
     double P_ADO = 0.2;
-    double threshold = 0.5;
+    double candidate_threshold = 0.5;
+    double posterior_0_threshold = 0.01;
     strcpy(gp->tmp_fname, "/tmp/SCarborSNV_cand_tmp");
+    strcpy(gp->vcf_fname, "SCarborSNV_out.vcf");
     /*Using getopt to get command line arguments */
     /*TODO: handle getting bams */
     static struct option prior_options[] = {
@@ -338,6 +361,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     /*Populate global parameter struct */
     gp->n_threads   = n_threads;
     gp->mp_isfile   = mp_isfile;
+    gp->pc_thresh   = log(posterior_0_threshold);
     gp->m           = m_cells;
     /*Convert prior params to log space, populate intial parameters struct */
     p0->l_lambda    = log(lambda0);
@@ -346,7 +370,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     p0->l_P_clonal  = log(P_clonal0);
     p0->l_P_amp_err = log(P_amplification_err);
     p0->l_P_ADO     = log(P_ADO);
-    p0->thresh      = log(threshold);
+    p0->c_thresh    = log(candidate_threshold);
     p0->m           = m_cells;
 }
 

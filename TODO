@@ -1,7 +1,7 @@
 FEATURES
 Error checking for wromg m value in cmdline
 deal with incomplete dist matrix
-    remove orphans
+    remove orphans - in tree building?
     impute based on 10.1186/1471-2105-9-166 (DOI)
     NB if nans in d then r becomes all NaNs and in min_D, all D vals then become NaN which is not < infty
 
@@ -16,6 +16,7 @@ use valgrind massif to make sure memory usage doesn't swell
 parameters & missing vals
     -in locus_likelihoods.c I set P(X|g) = P_ADO^2... how legit is this?
 Test values in tree
+    P_SNV_e sum correctly over branches, as well as case probabilities summed over relevant branches
     flowed down probabilities sum to 1
     The values are correct
 

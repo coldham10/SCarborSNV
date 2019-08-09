@@ -3,7 +3,7 @@
 
 typedef struct {
     long double l_P_tree; /*Calculated in sigma_priors.c */
-    double thresh; /*Log of threshold for sigma=0 posterior*/
+    double c_thresh; /*Log of threshold for sigma=0 posterior to call candidates*/
     double l_lambda; /*Somatic mutation frequency*/
     double l_mu; /*Germline mutation frequency*/
     double l_P_H; /*Haploid event frequency. 0.09? this should be from empirical */
