@@ -103,7 +103,6 @@ int main(int argc, char** argv) {
     /*Compute tree distances*/
     distance_matrix = malloc((m + 1) * sizeof(long double*));
     for (i = 0; i < m + 1; i++) { distance_matrix[i] = malloc((m + 1) * sizeof(long double)); }
-    /*TODO orphan unsupported cells, update raw dists, m, etc*/
     i = expected_jukes_cantor(distance_matrix, p_bar_numerators, p_bar_denominators, m + 1);
     if (i != 0) {
         fprintf(stderr, "Failed to find all pairwise distances. Some cells may share no overlapping loci\n");
@@ -135,11 +134,13 @@ int main(int argc, char** argv) {
     candidate->m = m;
     rewind(f_candidates);
     while(read_candidate(f_candidates, candidate)) {
+        for (i = 0; i < 3 * m; i++) { candidate->phylo_posteriors[i] = NAN; }
         infer_from_phylogeny(T, candidate->simple_posteriors, candidate->phylo_posteriors, candidate->P_SNV, p0->l_P_H);
         call_to_VCF(f_vcf, candidate, gp->pc_thresh);
         free_candidate_contents(candidate);
     }
     /*Freeing memory, closing files*/
+    remove(gp->tmp_fname);
     free(p0); free(gp);
     delete_tree(T);
     free(candidate);
@@ -147,7 +148,6 @@ int main(int argc, char** argv) {
     free_log_binom();
     fclose(f_candidates);
     fclose(f_vcf);
-    remove(gp->tmp_fname);
     return 0;
 }
 

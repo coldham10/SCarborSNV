@@ -24,6 +24,43 @@ int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** 
     }
     return return_val;
 }
+int count_missing_pairs(long double** JC_dist, int m) {
+    /*If a cell has no distances to any other then it is an orphan an can be ignored*/
+    int i, j, N = 0;
+    for (i = 0; i < m; i++) {
+        if (isnan(JC_dist[i][m])) {
+            /*Orphan*/
+            continue;
+        }
+        for (j = 0; j < m; j++) {
+            if (isnan(JC_dist[i][j])) {
+                N++;
+            }
+        }
+    }
+    return N/2;
+}
+
+int impute_missing_dists(long double** JC_dist, int m) {
+    int N_missing, last_N;
+    long double min_max;
+    N_missing = count_missing_pairs(JC_dist, m);
+    if (N_missing == 0) { return 0; }
+    last_N = N_missing;
+    /*Additive imputation*/
+    while (N_missing != last_N) {
+        //TODO
+    }
+    if (N_missing > 0) {
+        /*Full imputation failed*/
+        return -1;
+    }
+    else {
+        return 1;
+    }
+}
+
+
 
 void update_r(long double*  r, Node** L, long double** d, int* idx, int n_L);
 void min_D(int* out, Node** L, long double** d, long double* r, int* idx, int n_L);
@@ -31,7 +68,7 @@ void root_tree(Node* T, Node* parent);
 
 Node* build_tree_nj(long double** dist_mat, int m) {
     /*Following notation in durbin et al. NB assumes full distance matrix*/
-    int i, j, last_id;
+    int i, j, last_id, n_orphans;
     int coord[2];
     int n_L = 0;
     Node* node_i;
@@ -50,9 +87,15 @@ Node* build_tree_nj(long double** dist_mat, int m) {
         }
     }
     /*Initialize list of avaiable leaves*/
+    n_orphans = 0;
     for (i = 0; i < m + 1; i++) {
+        /* No cells sequenced, don't include in tree! */
+        if (isnan(dist_mat[i][m])) { 
+            n_orphans++;
+            continue;
+        }
         n_L++;
-        L_idx[i] = i;
+        L_idx[i-n_orphans] = i;
         node_i = malloc(sizeof(Node));
         node_i->id      = i;
         node_i->is_cell = 1;

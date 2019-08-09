@@ -19,7 +19,7 @@ int call_to_VCF(FILE* vcf_file, Candidate* c, long double zero_thresh) {
     for (i = 0; i < m; i++) { calls[i] = CALL_X; }
     n_variants = 0;
     for (i = 0; i < m; i++) {
-        j = -1;
+        max_j = -1;
         maxv = -INFINITY;
         for (j = 0; j < 3; j++) {
             if (c->phylo_posteriors[3*i + j] >= maxv) {
