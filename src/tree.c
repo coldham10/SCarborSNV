@@ -24,42 +24,6 @@ int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** 
     }
     return return_val;
 }
-int count_missing_pairs(long double** JC_dist, int m) {
-    /*If a cell has no distances to any other then it is an orphan an can be ignored*/
-    int i, j, N = 0;
-    for (i = 0; i < m; i++) {
-        if (isnan(JC_dist[i][m])) {
-            /*Orphan*/
-            continue;
-        }
-        for (j = 0; j < m; j++) {
-            if (isnan(JC_dist[i][j])) {
-                N++;
-            }
-        }
-    }
-    return N/2;
-}
-
-int impute_missing_dists(long double** JC_dist, int m) {
-    int N_missing, last_N;
-    long double min_max;
-    N_missing = count_missing_pairs(JC_dist, m);
-    if (N_missing == 0) { return 0; }
-    last_N = N_missing;
-    /*Additive imputation*/
-    while (N_missing != last_N) {
-        //TODO
-    }
-    if (N_missing > 0) {
-        /*Full imputation failed*/
-        return -1;
-    }
-    else {
-        return 1;
-    }
-}
-
 
 
 void update_r(long double*  r, Node** L, long double** d, int* idx, int n_L);
@@ -273,3 +237,42 @@ void print_tree(Node* T) {
     printf(")");
     if (T->is_root) { printf(";\n"); }
 }
+
+/*
+int count_missing_pairs(long double** JC_dist, int m) {
+    *If a cell has no distances to any other then it is an orphan an can be ignored*
+    int i, j, N = 0;
+    for (i = 0; i < m; i++) {
+        if (isnan(JC_dist[i][m])) {
+            *Orphan*
+            continue;
+        }
+        for (j = 0; j < m; j++) {
+            if (isnan(JC_dist[i][j])) {
+                N++;
+            }
+        }
+    }
+    return N/2;
+}
+
+int impute_missing_dists(long double** JC_dist, int m) {
+    int N_missing, last_N;
+    long double min_max;
+    N_missing = count_missing_pairs(JC_dist, m);
+    if (N_missing == 0) { return 0; }
+    last_N = N_missing;
+    *Additive imputation*
+    while (N_missing != last_N) {
+        *TODO*
+    }
+    if (N_missing > 0) {
+        *Full imputation failed*
+        return -1;
+    }
+    else {
+        return 1;
+    }
+}*/
+
+
