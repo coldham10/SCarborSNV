@@ -228,11 +228,11 @@ void print_tree(Node* T) {
     }
     printf("(");
     print_tree(T->nbrs[1]);
-    printf(":%.2Lf", T->edge_dists[1]);
+    printf(":%.2Lf", 100*T->edge_dists[1]);
     if (!T->is_root) {
         printf(",");
         print_tree(T->nbrs[2]);
-        printf(":%.2Lf", T->edge_dists[2]);
+        printf(":%.2Lf", 100*T->edge_dists[2]);
     }
     printf(")");
     if (T->is_root) { printf(";\n"); }

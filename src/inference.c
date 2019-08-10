@@ -38,7 +38,7 @@ int upwards_step(Node* T, long double* posteriors) {
     if (T->is_cell) {
         T->sum_W_Se = T->W_Se;
         T->sum_aux0 = T->aux0;
-        T->sum_W3   = logl(0); /*No LOH on terminal edges*/
+        T->sum_W3 = T->aux0 + T->p_bar;
     }
     else {
         /*Partial sum of W(S_e)*/
@@ -124,7 +124,7 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     P_SNV_e    = P_SNV + T->P_Se;
     P_Le__S[0] = P_LOH - logl(3) + T->W_SL[0] - T->sum_W_SL[0] - T->sum_P_Se; /*Case 1*/
     P_Le__S[1] = P_LOH - logl(3) + T->W_SL[1] - T->sum_W_SL[1] - T->sum_P_Se; /*Case 2*/
-    P_Le__S[2] = P_LOH - logl(3) + T->sum_aux0 + T->p_bar - T->sum_W3 - T->partial_prod; /*Case 3*/
+    P_Le__S[2] = P_LOH - logl(3) + T->sum_aux0 + T->p_bar - T->sum_W3; //XXX: should have: - T->partial_prod; /*Case 3*/
     /*Flow down genotype probabilities*/
     /*TODO check these always sum to 1 for each node*/
     /*P(g=0)*/

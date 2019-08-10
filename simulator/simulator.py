@@ -3,22 +3,26 @@
 import random
 import numpy as np
 
-random.seed(1738)
+#random.seed(22139)
 
-N_SITES = 10000
-CHROM_LENGTH = 1000
+N_SITES = 2000
+CHROM_LENGTH = 100
 SNV_RATE = 0.02
 BRANCH_RATE = 0.002
-HAPLOID_RATE = 0.001
+HAPLOID_RATE = 0.0005
 P_ADO_CHROM = 0.1
-AMP_ERR = 0.01
-SEQ_ERR = 0.01
-N_ITERS = 1400
-CLONAL_ITERS = 700
+AMP_ERR = 0.002
+SEQ_ERR = 0.02
+N_ITERS = 1000
+CLONAL_ITERS = 1000
 READ_DEPTH = 10
+
+PILEUP_FILENAME = "csimulated_{}.pileup".format(N_SITES)
+VCF_FILENAME = "csimulated_{}.vcf".format(N_SITES)
 
 mutation_sites = []
 active_nodes   = []
+mut_nucs = {}
 last_id = 0
 
 class Node:
@@ -77,9 +81,9 @@ def print_tree(T):
         return
     print('(', end='')
     print_tree(T.c1)
-    print(":{},".format(len(T.c1.mutations) - len(T.mutations)), end='')
+    print(":{},".format(1+len(T.c1.mutations) - len(T.mutations)), end='')
     print_tree(T.c2)
-    print(":{})".format(len(T.c2.mutations) - len(T.mutations)), end='')
+    print(":{})".format(1+len(T.c2.mutations) - len(T.mutations)), end='')
     if T.is_root:
         print(":{})RT;".format(len(T.mutations)))
     return
@@ -89,12 +93,54 @@ def drop_alleles():
         n_chrms = N_SITES//CHROM_LENGTH
         for c in range(n_chrms):
             if np.random.uniform(0,1) < P_ADO_CHROM:
-                cell.chrmabs.append(c, np.random.randint(0,1))
+                cell.chrmabs.append((c, np.random.randint(0,1)))
     return
 
+def to_phred(err):
+    Q = -10 * np.round(np.log10(err)) + 33
+    if Q > 122:
+        Q = 122
+    return chr(int(Q))
+
+def write_vcf(f):
+    for i in range(N_SITES):
+        if i not in mutation_sites:
+            continue
+        ref, alt = mut_nucs[i]
+        chrm = i // CHROM_LENGTH
+        f.write("Chrm{}\t{}\t.\t{}\t{}\t100\tPASS\t.\tGT".format(
+            chrm,
+            i % CHROM_LENGTH,
+            ref,
+            alt))
+        for cell in active_nodes:
+            if i in cell.mutations:
+                if chrm in [x[0] for x in cell.chrmabs]:
+                    f.write("\t1/1")
+                else:
+                    f.write("\t0/1")
+            else:
+                f.write("\t0/0")
+                #TODO let homozygous happen above tree
+        f.write('\n')
+    return
+
+def pick_nucs():
+    for loc in mutation_sites:
+        ref = np.random.choice(['A','C','G','T'])
+        alts = ['A','C','G','T']
+        alts.remove(ref)
+        alt = np.random.choice(alts)
+        mut_nucs[loc] = (ref, alt)
+
 def sequence_site(locus, init_depth):
-    ref = np.random.choice(['A','C','G','T'])
-    alt = np.random.choice(['A','C','G','T'].remove(ref))
+    if locus in mutation_sites:
+        ref, alt = mut_nucs[locus]
+    else:
+        ref = np.random.choice(['A','C','G','T'])
+        alts = ['A','C','G','T']
+        alts.remove(ref)
+        alt = np.random.choice(alts)
     cells = []
     for cell in active_nodes:
         depth = init_depth + int(np.random.normal(0, np.sqrt(READ_DEPTH)))
@@ -117,20 +163,39 @@ def sequence_site(locus, init_depth):
         for j in range(depth):
             x = ref if np.random.choice(genotype) == 0 else alt
             if np.random.uniform(0,1) < AMP_ERR:
-                x = np.random.choice(['A','C','G','T'].remove(x))
+                poss = ['A','C','G','T']
+                poss.remove(x)
+                x = np.random.choice(poss)
             seq_err = SEQ_ERR + np.random.normal(SEQ_ERR, 0.2)
             if seq_err < 0:
                 seq_err = 0
             if np.random.uniform(0,1) < seq_err:
-                x = np.random.choice(['A','C','G','T','N'].remove(x))
+                poss = ['A','C','G','T','N']
+                poss.remove(x)
+                x = np.random.choice(poss)
+            if x == ref:
+                x = '.' if np.random.randint(0,1) == 0 else ','
             reads.append(x)
             quals.append(to_phred(seq_err))
         cells.append((depth, "".join(reads), "".join(quals)))
-    return cells
+    return (ref, alt, cells)
             
-
-
-
+def pileup_write(f, pos, ref, alt, cells):
+    total_depth = 0
+    for c in cells:
+        total_depth += c[0]
+    if total_depth == 0:
+        return
+    f.write("Chrm{}\t{}\t{}".format(
+        pos // CHROM_LENGTH,
+        pos % CHROM_LENGTH,
+        ref))
+    for cell in cells:
+        f.write("\t{}\t{}\t{}".format(
+            cell[0],
+            cell[1],
+            cell[2]))
+    f.write("\n")
 
 
 
@@ -143,8 +208,14 @@ if __name__ == "__main__":
             n.try_mutate()
             n.try_branch()
     label_tree()
+    print(len(active_nodes))
     print_tree(root)
+    pick_nucs()
+    vcf_f = open(VCF_FILENAME, "w+")
+    write_vcf(vcf_f)
+    vcf_f.close()
     drop_alleles()
+    pfile = open(PILEUP_FILENAME, "w+")
     current_depth = READ_DEPTH
     for i in range(N_SITES):
         if i % CHROM_LENGTH == 0:
@@ -153,5 +224,7 @@ if __name__ == "__main__":
             current_depth += int(np.random.normal(0,2)); 
             if current_depth < 0:
                 current_depth = 0;
-        sequence_site(i, current_depth)
+        ref, alt, cellcalls = sequence_site(i, current_depth)
+        pileup_write(pfile, i, ref, alt, cellcalls)
+    pfile.close()
 
