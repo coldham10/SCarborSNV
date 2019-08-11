@@ -15,7 +15,7 @@ int call_to_VCF(FILE* vcf_file, Candidate* c, long double zero_thresh) {
     long double maxv, qual;
     int m = c->m;
     char call_str[16];
-    char* calls = malloc(m);
+    int* calls = malloc(m * sizeof(int));
     n_variants = 0;
     for (i = 0; i < m; i++) {
         max_j = -1;
@@ -26,7 +26,7 @@ int call_to_VCF(FILE* vcf_file, Candidate* c, long double zero_thresh) {
                 max_j = j;
             }
         }
-        calls[i] = (char)max_j;
+        calls[i] = max_j;
         if (max_j > 0) {
             n_variants++;
         }
@@ -38,7 +38,10 @@ int call_to_VCF(FILE* vcf_file, Candidate* c, long double zero_thresh) {
             calls[i] = CALL_X;
         }
     }
-    if (n_variants == 0) { return 1; }
+    if (n_variants == 0) {
+        free(calls);
+        return 1;
+    }
     n_valid = 0;
     for (i = 0; i < m; i++) {
         n_valid += c->valid_cells[i];
