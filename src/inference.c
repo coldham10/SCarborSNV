@@ -122,14 +122,14 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     T->sum_W3      = T->nbrs[0]->sum_W3;
     /*Calculate conditional probabilities*/
     P_SNV_e    = P_SNV + T->P_Se;
-    P_Le__S[0] = P_LOH - logl(3) + T->W_SL[0] - T->sum_W_SL[0]; //XXX - T->sum_P_Se; /*Case 1*/
-    P_Le__S[1] = P_LOH - logl(3) + T->W_SL[1] - T->sum_W_SL[1]; //XXX - T->sum_P_Se; /*Case 2*/
-    P_Le__S[2] = P_LOH - logl(3) + T->sum_aux0 + T->p_bar - T->sum_W3; //XXX: should have: - T->partial_prod; /*Case 3*/
+    P_Le__S[0] = P_LOH - logl(3) + T->W_SL[0] - T->sum_W_SL[0]; /*Case 1*/
+    P_Le__S[1] = P_LOH - logl(3) + T->W_SL[1] - T->sum_W_SL[1]; /*Case 2*/
+    P_Le__S[2] = P_LOH - logl(3) + T->sum_aux0 + T->p_bar - T->sum_W3; /*Case 3*/
     /*Flow down genotype probabilities*/
     /*TODO check these always sum to 1 for each node*/
     /*P(g=0)*/
     to_sum[0] = T->nbrs[0]->P_g[0] + logl(1-expl(P_SNV_e)) + logl(1-expl(P_Le__S[2]));
-    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[0] - logl(2); /*SNV and LOH dropped alt on same branch XXX divided by two this term?*/
+    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[0] + logl(2.0/3); /*SNV and LOH dropped alt on same branch XXX divided by two this term?*/
     to_sum[2] = T->nbrs[0]->P_g[1] + P_Le__S[0];
     T->P_g[0] = LSE(to_sum, 3);
     /*P(g=1)*/
@@ -138,7 +138,7 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     T->P_g[1] = LSE2(to_sum[0], to_sum[1]);
     /*P(g=2)*/
     to_sum[0] = T->nbrs[0]->P_g[3] + P_SNV_e; /*Silently haploid cell mutates to "homozygous" alt*/
-    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[1] -logl(2); /*XXX also divided here by two?*/
+    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[1] + logl(2.0/3); /*XXX also divided here by two?*/
     to_sum[2] = T->nbrs[0]->P_g[1] + P_Le__S[1];
     to_sum[3] = T->nbrs[0]->P_g[2];
     T->P_g[2] = LSE(to_sum, 4);
