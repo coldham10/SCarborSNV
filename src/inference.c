@@ -24,7 +24,7 @@
 
 int upwards_step(Node* T, long double* posteriors) {
     int i;
-    long double to_sum[3];
+    long double to_sum[4];
     if (T->is_root) {
         /*Note that information for the root node is stored one below,
          * as each node holds information about the edge directly above it*/
@@ -57,8 +57,8 @@ int upwards_step(Node* T, long double* posteriors) {
     /*Upwards partial sums*/
     if (T->is_cell) {
         T->sum_W_Se = T->W_Se;
-        T->sum_aux0 = T->aux0;
-        T->sum_W3 = T->aux0 + T->p_bar;
+        T->sum_aux0 = logl(0); /*T->aux0;*/
+        T->sum_W3   = logl(0); /*T->aux0 + T->p_bar;*/
     }
     else {
         /*Partial sum of W(S_e)*/
@@ -69,12 +69,14 @@ int upwards_step(Node* T, long double* posteriors) {
         /*Partial sum of aux0 (p_bar * pi_2/pi_0)*/
         to_sum[0] = T->nbrs[1]->sum_aux0;
         to_sum[1] = T->nbrs[2]->sum_aux0;
-        to_sum[2] = T->aux0;
-        T->sum_aux0 = LSE(to_sum, 3);
+        /*to_sum[2] = T->aux0;*/
+        to_sum[2] = T->nbrs[1]->aux0;
+        to_sum[3] = T->nbrs[2]->aux0;
+        T->sum_aux0 = LSE(to_sum, 4); /*3*/
         /*Overall sum on W^(3)(L)*/
         to_sum[0] = T->nbrs[1]->sum_W3;
         to_sum[1] = T->nbrs[2]->sum_W3;
-        to_sum[2] = T->sum_aux0 + T->p_bar;
+        to_sum[2] = LSE2(T->sum_aux0, T->aux0 - logl(2)) + T->p_bar; /*XXX*/
         T->sum_W3 = LSE(to_sum, 3);
     }
     return 0;
@@ -87,8 +89,8 @@ int downwards_step(Node* T) {
     if (T->is_root) {
         total_sum_W_Se = T->nbrs[1]->sum_W_Se;
         T->sum_P_Se = logl(0);
+        T->aux1     = logl(0);
         T->sum_aux1 = logl(0);
-        T->partial_prod = logl(1);
         downwards_step(T->nbrs[1]);
         T->sum_W_SL[0] = T->nbrs[1]->sum_W_SL[0];
         T->sum_W_SL[1] = T->nbrs[1]->sum_W_SL[1];
@@ -99,11 +101,10 @@ int downwards_step(Node* T) {
     T->aux1 = T->pi[1] + T->p_bar - T->pi[0];
     /*Downwards partial sums/product*/ 
     T->sum_P_Se = LSE2(T->P_Se, T->nbrs[0]->sum_P_Se);
-    T->sum_aux1 = LSE2(T->aux1, T->nbrs[0]->sum_aux1);
-    T->partial_prod = T->nbrs[0]->partial_prod + logl(1-expl(T->P_Se));
+    T->sum_aux1 = LSE2(T->nbrs[0]->aux1, T->nbrs[0]->sum_aux1);
     /*More local values*/
-    T->W_SL[0] = T->p_bar + T->pi[0] - T->pi[1] + T->sum_aux1;
-    T->W_SL[1] = T->p_bar + T->pi[2] - T->pi[1] + T->sum_aux1;
+    T->W_SL[0] = T->p_bar + T->pi[0] - T->pi[1] + LSE2(T->sum_aux1, T->aux1 - logl(2));
+    T->W_SL[1] = T->p_bar + T->pi[2] - T->pi[1] + LSE2(T->sum_aux1, T->aux1 - logl(2));
     /*Recurse down*/
     if (T->is_cell) {
         /*No LOH allowed on terminal edges since ADO much more likely*/
@@ -141,7 +142,6 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     T->sum_W_SL[1] = T->nbrs[0]->sum_W_SL[1];
     T->sum_W3      = T->nbrs[0]->sum_W3;
     /*Calculate conditional probabilities*/
-    /*XXX make sure this matches paper*/
     P_SNV_e    = P_SNV + T->P_Se;
     P_Le__S[0] = P_LOH - logl(3) + T->W_SL[0] - T->sum_W_SL[0]; /*Case 1*/
     P_Le__S[1] = P_LOH - logl(3) + T->W_SL[1] - T->sum_W_SL[1]; /*Case 2*/
@@ -150,7 +150,7 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     /*TODO check these always sum to 1 for each node*/
     /*P(g=0)*/
     to_sum[0] = T->nbrs[0]->P_g[0] + logl(1-expl(P_SNV_e)) + logl(1-expl(P_Le__S[2]));
-    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[0] - logl(2); /*SNV and LOH dropped alt on same branch XXX divided by two this term?*/
+    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[0]; /*SNV and LOH dropped alt on same branch*/
     to_sum[2] = T->nbrs[0]->P_g[1] + P_Le__S[0];
     T->P_g[0] = LSE(to_sum, 3);
     /*P(g=1)*/
@@ -159,7 +159,7 @@ int DP_genotypes(Node* T, long double* result, long double P_SNV, long double P_
     T->P_g[1] = LSE2(to_sum[0], to_sum[1]);
     /*P(g=2)*/
     to_sum[0] = T->nbrs[0]->P_g[3] + P_SNV_e; /*Silently haploid cell mutates to "homozygous" alt*/
-    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[1] - logl(2); /*XXX also divided here by two?*/
+    to_sum[1] = T->nbrs[0]->P_g[0] + P_SNV_e + P_Le__S[1]; /*?*/
     to_sum[2] = T->nbrs[0]->P_g[1] + P_Le__S[1];
     to_sum[3] = T->nbrs[0]->P_g[2];
     T->P_g[2] = LSE(to_sum, 4);

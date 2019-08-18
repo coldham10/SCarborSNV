@@ -33,7 +33,6 @@ typedef struct Node {
     /*Downwards step values*/
     long double sum_P_Se;
     long double sum_aux1; /*aux1 = p_bar(e)*pi_1(e)/pi_0(e)*/
-    long double partial_prod; /*product of [1-P(Se)] */
     long double sum_W_SL[2]; /*Norm constants passed back up at end of downwards step*/
     /*Node-specific values (not sums, etc)*/
     long double W_Se, aux0, p_bar; /*p_bar is of edge directly above to parent ([0])*/
