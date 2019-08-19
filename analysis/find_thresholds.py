@@ -126,7 +126,7 @@ def test_params(m_cells, iters, params):
     for i in range(iters):
         T = simulator.Phylogeny()
         T.evolve(n_generations=1000, germline=True)
-        T.evolve(n_cells=5, germline=False)
+        T.evolve(n_cells=m_cells, germline=False)
         m = len(T.active_nodes)
         T.prepare()
         vcf_f = open("temp_r.vcf", "w+")
@@ -155,12 +155,12 @@ candidate_threshs = [0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
 site_data = pd.DataFrame(columns=["cand","post","precision","recall","F1"])
 cell_data = pd.DataFrame(columns=["cand","post","precision","recall","F1"])
 i = 0
-for t1 in posterior_threshs:
-    for t2 in candidate_threshs:
+for t1 in candidate_threshs:
+    for t2 in posterior_threshs:
         prms = {}
-        prms["posterior-threshold"] = t1
-        prms["candidate-threshold"] = t2
-        site_res, cell_res = test_params(10, 10, prms)
+        prms["candidate-threshold"] = t1
+        prms["posterior-threshold"] = t2
+        site_res, cell_res = test_params(5, 50, prms)
         for j in range(10):
             site_data.loc[i] = [t1, t2, *site_res[j]]
             cell_data.loc[i] = [t1, t2, *cell_res[j]]
