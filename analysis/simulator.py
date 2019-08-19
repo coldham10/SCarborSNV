@@ -78,7 +78,7 @@ class Node:
 #CLONAL_ITERS = 1000
 #READ_DEPTH = 10
 class Phylogeny:
-    def __init__(self, n_sites=2000, chrom_length=100, SNV_rate=0.02, branch_rate=0.002, haploid_rate=0.0005, P_ADO_chrom=0.1):
+    def __init__(self, n_sites=2000, chrom_length=100, SNV_rate=0.02, branch_rate=0.002, haploid_rate=0.0005, P_ADO_chrom=0.2):
         self.last_id = 0
         self.root = Node(self.last_id, is_root=True);
         self.active_nodes = [self.root]
