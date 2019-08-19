@@ -342,16 +342,21 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     /*Using getopt to get command line arguments */
     /*TODO: handle getting bams */
     static struct option prior_options[] = {
-        {"lambda", required_argument, NULL, 'l'},
-        {"mu", required_argument, NULL, 'u'},
-        {"p-haploid", required_argument, NULL, 'h'},
-        {"p-clonal", required_argument, NULL, 'c'},
-        {"pileup-file", required_argument, NULL, 'p'},
-        {"n-cells", required_argument, NULL, 'm'}
+        {"lambda",              required_argument, NULL, 'l'},
+        {"mu",                  required_argument, NULL, 'u'},
+        {"p-haploid",           required_argument, NULL, 'h'},
+        {"p-clonal",            required_argument, NULL, 'c'},
+        {"pileup-file",         required_argument, NULL, 'p'},
+        {"vcf-file",            required_argument, NULL, 'o'},
+        {"n-cells",             required_argument, NULL, 'm'},
+        {"temp-file",           required_argument, NULL, 'A'},
+        {"amp-err",             required_argument, NULL, 'B'},
+        {"p-ado",               required_argument, NULL, 'C'},
+        {"candidate-threshold", required_argument, NULL, 'D'},
+        {"posterior-threshold", required_argument, NULL, 'E'}
     };
     int c, opt_idx = 0;
-    /*TODO add options for threshold, tempfilename, amplification err and P_ADO*/
-    while ((c = getopt_long(argc, argv, "t:p:m:", prior_options, &opt_idx) )!= -1 ) {
+    while ((c = getopt_long(argc, argv, "t:p:m:o:", prior_options, &opt_idx) )!= -1 ) {
         switch(c) {
             case 't':
                 n_threads = atoi(optarg);
@@ -360,6 +365,9 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
                 /*If pileup comes from file, -p pfile.pileup or --pileup-file=pfile.xx */
                 mp_isfile = 1;
                 strcpy(gp->mp_fname, optarg);
+                break;
+            case 'o':
+                strcpy(gp->vcf_fname, optarg);
                 break;
             case 'l':
                 lambda0 = atof(optarg);
@@ -375,6 +383,21 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
                 break;
             case 'm':
                 m_cells = atoi(optarg);
+                break;
+            case 'A':
+                strcpy(gp->tmp_fname, optarg);
+                break;
+            case 'B':
+                P_amplification_err = atof(optarg);
+                break;
+            case 'C':
+                P_ADO = atof(optarg);
+                break;
+            case 'D':
+                candidate_threshold = atof(optarg);
+                break;
+            case 'E':
+                posterior_0_threshold = atof(optarg);
                 break;
         }
     }

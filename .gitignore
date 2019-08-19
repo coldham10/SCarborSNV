@@ -1,3 +1,5 @@
 #Do not need to track the full htslib
 /lib/
 /analysis/.ipynb_checkpoints
+**/__pycache__
+SCarborSNV_out.vcf
