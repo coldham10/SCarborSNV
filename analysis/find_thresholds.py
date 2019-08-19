@@ -160,7 +160,7 @@ for t1 in candidate_threshs:
         prms = {}
         prms["candidate-threshold"] = t1
         prms["posterior-threshold"] = t2
-        site_res, cell_res = test_params(5, 50, prms)
+        site_res, cell_res = test_params(10, 50, prms)
         for j in range(10):
             site_data.loc[i] = [t1, t2, *site_res[j]]
             cell_data.loc[i] = [t1, t2, *cell_res[j]]
