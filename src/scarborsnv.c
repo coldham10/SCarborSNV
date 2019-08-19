@@ -156,7 +156,6 @@ int main(int argc, char** argv) {
     while(read_candidate(f_candidates, candidate)) {
         for (i = 0; i < 3 * m; i++) { candidate->phylo_posteriors[i] = NAN; }
         if (gp->NO_PHYLO) {
-            fprintf(stderr, "Omitting phylogenetic inference");
             memcpy(candidate->phylo_posteriors, candidate->simple_posteriors, 3*m*sizeof(long double));
         }
         else {
