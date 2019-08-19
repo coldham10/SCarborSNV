@@ -155,7 +155,13 @@ int main(int argc, char** argv) {
     rewind(f_candidates);
     while(read_candidate(f_candidates, candidate)) {
         for (i = 0; i < 3 * m; i++) { candidate->phylo_posteriors[i] = NAN; }
-        infer_from_phylogeny(T, candidate->simple_posteriors, candidate->phylo_posteriors, candidate->P_SNV, p0->l_P_H);
+        if (gp->NO_PHYLO) {
+            fprintf(stderr, "Omitting phylogenetic inference");
+            memcpy(candidate->phylo_posteriors, candidate->simple_posteriors, 3*m*sizeof(long double));
+        }
+        else {
+            infer_from_phylogeny(T, candidate->simple_posteriors, candidate->phylo_posteriors, candidate->P_SNV, p0->l_P_H);
+        }
         call_to_VCF(f_vcf, candidate, gp->pc_thresh);
         free_candidate_contents(candidate);
     }
@@ -337,6 +343,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     double P_ADO = 0.2;
     double candidate_threshold = 0.5;
     double posterior_0_threshold = 0.01;
+    int omit_phylo = 0;
     strcpy(gp->tmp_fname, "/tmp/SCarborSNV_cand_tmp");
     strcpy(gp->vcf_fname, "SCarborSNV_out.vcf");
     /*Using getopt to get command line arguments */
@@ -353,7 +360,8 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
         {"amp-err",             required_argument, NULL, 'B'},
         {"p-ado",               required_argument, NULL, 'C'},
         {"candidate-threshold", required_argument, NULL, 'D'},
-        {"posterior-threshold", required_argument, NULL, 'E'}
+        {"posterior-threshold", required_argument, NULL, 'E'},
+        {"omit-phlo-inference", no_argument      , NULL, 'F'}
     };
     int c, opt_idx = 0;
     while ((c = getopt_long(argc, argv, "t:p:m:o:", prior_options, &opt_idx) )!= -1 ) {
@@ -399,6 +407,9 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
             case 'E':
                 posterior_0_threshold = atof(optarg);
                 break;
+            case 'F':
+                omit_phylo = 1;
+                break;
         }
     }
     /*Populate global parameter struct */
@@ -406,6 +417,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     gp->mp_isfile   = mp_isfile;
     gp->pc_thresh   = log(posterior_0_threshold);
     gp->m           = m_cells;
+    gp->NO_PHYLO    = omit_phylo;
     /*Convert prior params to log space, populate intial parameters struct */
     p0->l_lambda    = log(lambda0);
     p0->l_mu        = log(mu0);

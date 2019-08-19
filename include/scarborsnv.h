@@ -40,6 +40,7 @@ typedef struct {
     unsigned int n_threads;
     int m; /*Number of cells */
     int mp_isfile; /*TODO: piling up is to be handled by SCarborSNV */
+    int NO_PHYLO; /*Phylogeny aware final probabilities are just posteriors from binomial*/
 } global_params_t;
 
 #endif  /*SCARBORSNV_H_ */
