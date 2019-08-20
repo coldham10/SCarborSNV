@@ -92,31 +92,31 @@ def test_phylo(m_cells, iters, params):
         T.evolve(n_cells=5, germline=False)
         m = len(T.active_nodes)
         T.prepare()
-        vcf_f = open("temp_r.vcf", "w+")
+        vcf_f = open("phylo_temp_r.vcf", "w+")
         T.write_vcf(vcf_f)
         vcf_f.close()
-        pfile = open("temp.pileup", "w+")
+        pfile = open("phylo_temp.pileup", "w+")
         T.write_pileup(pfile)
         pfile.close()
-        args = ["../SCarborSNV", "-m", str(m),"-p", "temp.pileup", "-o" "temp_c.vcf"]
+        args = ["../SCarborSNV", "-m", str(m),"-p", "phylo_temp.pileup", "-o" "phylo_temp_c.vcf"]
         for name, val in params.items():
             args.append("--{}={}".format(name, val))
         subprocess.run(args)
-        real_vcf = open("temp_r.vcf", "r")
-        call_vcf = open("temp_c.vcf", "r")
+        real_vcf = open("phylo_temp_r.vcf", "r")
+        call_vcf = open("phylo_temp_c.vcf", "r")
         cell_results.loc[2*i] = [i, 'Y', *compare_VCF_cells(real_vcf, call_vcf, 2000)]
         real_vcf.close()
         call_vcf.close()
         args.append("--omit-phlo-inference")
         subprocess.run(args)
-        real_vcf = open("temp_r.vcf", "r")
-        call_vcf = open("temp_c.vcf", "r")
+        real_vcf = open("phylo_temp_r.vcf", "r")
+        call_vcf = open("phylo_temp_c.vcf", "r")
         cell_results.loc[2*i + 1] = [i, 'N', *compare_VCF_cells(real_vcf, call_vcf, 2000)]
         real_vcf.close()
         call_vcf.close()
-    os.remove("temp.pileup")
-    os.remove("temp_r.vcf")
-    os.remove("temp_c.vcf")
+    os.remove("phylo_temp.pileup")
+    os.remove("phylo_temp_r.vcf")
+    os.remove("phylo_temp_c.vcf")
     return cell_results
 
 cell_results = test_phylo(10, 30, {})
