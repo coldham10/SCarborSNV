@@ -360,6 +360,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
         {"p-ado",               required_argument, NULL, 'C'},
         {"candidate-threshold", required_argument, NULL, 'D'},
         {"posterior-threshold", required_argument, NULL, 'E'},
+        /*TODO XXX typo in phlo*/
         {"omit-phlo-inference", no_argument      , NULL, 'F'}
     };
     int c, opt_idx = 0;

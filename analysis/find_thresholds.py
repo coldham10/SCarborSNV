@@ -47,9 +47,18 @@ def compare_VCF_sites(real_f, inferred_f, n_sites):
             FP += 1
     #True negatives
     TN = n_sites - TP - FN - FP
-    precision = TP/(TP + FP)
-    recall    = TP/(TP + FN)
-    F1        = (2*TP)/(2*TP + FP + FN)
+    if (TP+FP) == 0:
+        precision = -1
+    else:
+        precision = TP/(TP + FP)
+    if TP + FN ==  0:
+        recall = -1
+    else:
+        recall = TP/(TP + FN)
+    if 2*TP + FP + FN == 0:
+        F1 = -1
+    else:
+        F1 = (2*TP)/(2*TP + FP + FN)
     return (precision, recall, F1)
     #return (TP,FN,FP,TN)
 
@@ -115,9 +124,18 @@ def compare_VCF_cells(real_f, inferred_f, n_sites):
                     #Cell called mutant
                     FP += 1
     TN = m * n_sites - TP - FP - FN
-    precision = TP/(TP + FP)
-    recall    = TP/(TP + FN)
-    F1        = (2*TP)/(2*TP + FP + FN)
+    if (TP+FP) == 0:
+        precision = -1
+    else:
+        precision = TP/(TP + FP)
+    if TP + FN ==  0:
+        recall = -1
+    else:
+        recall = TP/(TP + FN)
+    if 2*TP + FP + FN == 0:
+        F1 = -1
+    else:
+        F1 = (2*TP)/(2*TP + FP + FN)
     return (precision, recall, F1)
 
 def test_params(m_cells, iters, params):
@@ -161,7 +179,7 @@ for t1 in candidate_threshs:
         prms["candidate-threshold"] = t1
         prms["posterior-threshold"] = t2
         site_res, cell_res = test_params(10, 50, prms)
-        for j in range(10):
+        for j in range(50):
             site_data.loc[i] = [t1, t2, *site_res[j]]
             cell_data.loc[i] = [t1, t2, *cell_res[j]]
             i += 1
