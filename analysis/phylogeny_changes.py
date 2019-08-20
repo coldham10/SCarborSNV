@@ -88,8 +88,8 @@ def test_phylo(m_cells, iters, params):
     cell_results = pd.DataFrame(columns=["i","Phylo","Precision","Recall","F1"])
     for i in range(iters):
         T = simulator.Phylogeny()
-        T.evolve(n_generations=1000, germline=True)
-        T.evolve(n_cells=5, germline=False)
+        T.evolve(n_generations=800, germline=True)
+        T.evolve(n_cells=m_cells, germline=False)
         m = len(T.active_nodes)
         T.prepare()
         vcf_f = open("phylo_temp_r.vcf", "w+")
