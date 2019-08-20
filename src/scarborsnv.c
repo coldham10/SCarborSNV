@@ -341,7 +341,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     double P_amplification_err = 0.002;
     double P_ADO = 0.2;
     double candidate_threshold = 0.6;
-    double posterior_0_threshold = 0.01;
+    double posterior_0_threshold = 0.001;
     int omit_phylo = 0;
     strcpy(gp->tmp_fname, "/tmp/SCarborSNV_cand_tmp");
     strcpy(gp->vcf_fname, "SCarborSNV_out.vcf");
@@ -360,8 +360,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
         {"p-ado",               required_argument, NULL, 'C'},
         {"candidate-threshold", required_argument, NULL, 'D'},
         {"posterior-threshold", required_argument, NULL, 'E'},
-        /*TODO XXX typo in phlo*/
-        {"omit-phlo-inference", no_argument      , NULL, 'F'}
+        {"omit-phylo-inference", no_argument      , NULL, 'F'}
     };
     int c, opt_idx = 0;
     while ((c = getopt_long(argc, argv, "t:p:m:o:", prior_options, &opt_idx) )!= -1 ) {
