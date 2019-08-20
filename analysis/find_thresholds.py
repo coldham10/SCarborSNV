@@ -23,6 +23,9 @@ def compare_VCF_sites(real_f, inferred_f, n_sites):
     true_reader = list(csv.reader(real_f, delimiter='\t'))
     call_reader = list(csv.reader(inferred_f, delimiter='\t'))
     TP = FN = TN = FP = 0
+    if len(call_reader) == 0:
+        print("call reader 0")
+        return (0,0,0)
     #Sites only
     for true_line in true_reader:
         found = False
@@ -178,7 +181,7 @@ for t1 in candidate_threshs:
         prms = {}
         prms["candidate-threshold"] = t1
         prms["posterior-threshold"] = t2
-        site_res, cell_res = test_params(10, 50, prms)
+        site_res, cell_res = test_params(10, 80, prms)
         for j in range(80):
             site_data.loc[i] = [t1, t2, *site_res[j]]
             cell_data.loc[i] = [t1, t2, *cell_res[j]]
