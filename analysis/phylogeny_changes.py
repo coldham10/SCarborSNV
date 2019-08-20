@@ -107,6 +107,7 @@ def test_phylo(m_cells, iters, params):
         cell_results.loc[2*i] = [i, 'Y', *compare_VCF_cells(real_vcf, call_vcf, 2000)]
         real_vcf.close()
         call_vcf.close()
+        #NB fix this in source
         args.append("--omit-phlo-inference")
         subprocess.run(args)
         real_vcf = open("phylo_temp_r.vcf", "r")
