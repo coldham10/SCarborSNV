@@ -16,6 +16,7 @@ genotype_dict = {"0/0" : 0,
                 "1/." : 2,
                 "./1" : 2,
                 "./." : -1}
+
 def compare_VCF_cells(real_f, inferred_f, n_sites):
     real_f.seek(0)
     inferred_f.seek(0)
@@ -107,6 +108,7 @@ def test_phylo(m_cells, iters, params):
         cell_results.loc[2*i] = [i, 'Y', *compare_VCF_cells(real_vcf, call_vcf, 2000)]
         real_vcf.close()
         call_vcf.close()
+        os.remove("phylo_temp_c.vcf")
         #NB fix this in source
         args.append("--omit-phlo-inference")
         subprocess.run(args)
@@ -115,12 +117,10 @@ def test_phylo(m_cells, iters, params):
         cell_results.loc[2*i + 1] = [i, 'N', *compare_VCF_cells(real_vcf, call_vcf, 2000)]
         real_vcf.close()
         call_vcf.close()
-    os.remove("phylo_temp.pileup")
-    os.remove("phylo_temp_r.vcf")
-    os.remove("phylo_temp_c.vcf")
+        os.remove("phylo_temp_r.vcf")
+        os.remove("phylo_temp_c.vcf")
+        os.remove("phylo_temp.pileup")
     return cell_results
 
-cell_results = test_phylo(10, 30, {})
+cell_results = test_phylo(10, 100, {})
 cell_results.to_csv("phylo_cell_results.csv", index=False)
-cell_results = test_phylo(10, 30, {"posterior-threshold": 0})
-cell_results.to_csv("phylo_cell_results_no_thresh.csv", index=False)
