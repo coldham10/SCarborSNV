@@ -1,0 +1,372 @@
+Traceback (most recent call last):
+  File "./phylogeny_changes.py", line 123, in <module>
+    cell_results = test_phylo(10, 30, {})
+  File "./phylogeny_changes.py", line 104, in test_phylo
+    subprocess.run(args)
+  File "/usr/lib/python3.6/subprocess.py", line 423, in run
+    with Popen(*popenargs, **kwargs) as process:
+  File "/usr/lib/python3.6/subprocess.py", line 729, in __init__
+    restore_signals, start_new_session)
+  File "/usr/lib/python3.6/subprocess.py", line 1364, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '../SCarborSNV': '../SCarborSNV'
+Found 54 candidate loci
+19499 pairwise comparisons made between cells to infer phylogeny
+(((4:0.24,3:0.36):0.14,(2:0.20,(1:0.21,0:0.21):0.02):0.13):0.65);
+Found 54 candidate loci
+19499 pairwise comparisons made between cells to infer phylogeny
+(((4:0.24,3:0.36):0.14,(2:0.20,(1:0.21,0:0.21):0.02):0.13):0.65);
+Found 132 candidate loci
+18853 pairwise comparisons made between cells to infer phylogeny
+(((1:0.26,0:0.34):0.36,(4:0.52,(3:0.52,2:0.38):0.01):0.27):2.28);
+Found 132 candidate loci
+18853 pairwise comparisons made between cells to infer phylogeny
+(((1:0.26,0:0.34):0.36,(4:0.52,(3:0.52,2:0.38):0.01):0.27):2.28);
+Found 186 candidate loci
+17747 pairwise comparisons made between cells to infer phylogeny
+((0:1.22,((2:0.65,1:0.77):0.29,(4:1.11,3:0.75):0.21):0.38):2.75);
+Found 186 candidate loci
+17747 pairwise comparisons made between cells to infer phylogeny
+((0:1.22,((2:0.65,1:0.77):0.29,(4:1.11,3:0.75):0.21):0.38):2.75);
+Found 144 candidate loci
+18619 pairwise comparisons made between cells to infer phylogeny
+((0:0.71,((4:0.51,3:0.22):0.05,(2:0.58,1:0.33):0.06):0.17):2.94);
+Found 144 candidate loci
+18619 pairwise comparisons made between cells to infer phylogeny
+((0:0.71,((4:0.51,3:0.22):0.05,(2:0.58,1:0.33):0.06):0.17):2.94);
+Found 168 candidate loci
+18712 pairwise comparisons made between cells to infer phylogeny
+((1:1.04,(2:0.75,((4:0.44,3:0.42):0.39,0:1.41):0.16):0.30):2.99);
+Found 168 candidate loci
+18712 pairwise comparisons made between cells to infer phylogeny
+((1:1.04,(2:0.75,((4:0.44,3:0.42):0.39,0:1.41):0.16):0.30):2.99);
+Found 183 candidate loci
+28032 pairwise comparisons made between cells to infer phylogeny
+((1:0.81,((2:0.95,0:0.55):0.14,(3:0.70,(5:0.44,4:0.65):0.04):0.04):0.07):4.28);
+Found 183 candidate loci
+28032 pairwise comparisons made between cells to infer phylogeny
+((1:0.81,((2:0.95,0:0.55):0.14,(3:0.70,(5:0.44,4:0.65):0.04):0.04):0.07):4.28);
+Found 208 candidate loci
+18237 pairwise comparisons made between cells to infer phylogeny
+((1:1.12,(((4:0.37,3:0.64):0.18,0:0.77):0.18,2:0.98):0.16):4.56);
+Found 208 candidate loci
+18237 pairwise comparisons made between cells to infer phylogeny
+((1:1.12,(((4:0.37,3:0.64):0.18,0:0.77):0.18,2:0.98):0.16):4.56);
+Found 243 candidate loci
+16938 pairwise comparisons made between cells to infer phylogeny
+((((2:1.12,0:0.72):0.20,1:0.93):0.15,(4:0.68,3:1.13):0.12):5.71);
+Found 243 candidate loci
+16938 pairwise comparisons made between cells to infer phylogeny
+((((2:1.12,0:0.72):0.20,1:0.93):0.15,(4:0.68,3:1.13):0.12):5.71);
+Found 304 candidate loci
+19377 pairwise comparisons made between cells to infer phylogeny
+((4:1.70,(((1:1.16,0:1.18):0.19,2:0.70):0.36,3:1.27):0.20):6.49);
+Found 304 candidate loci
+19377 pairwise comparisons made between cells to infer phylogeny
+((4:1.70,(((1:1.16,0:1.18):0.19,2:0.70):0.36,3:1.27):0.20):6.49);
+Found 291 candidate loci
+18734 pairwise comparisons made between cells to infer phylogeny
+(((2:1.79,0:1.30):0.24,((4:0.92,3:1.23):0.12,1:1.54):0.11):6.78);
+Found 291 candidate loci
+18734 pairwise comparisons made between cells to infer phylogeny
+(((2:1.79,0:1.30):0.24,((4:0.92,3:1.23):0.12,1:1.54):0.11):6.78);
+Found 327 candidate loci
+17106 pairwise comparisons made between cells to infer phylogeny
+((0:2.01,((2:1.15,1:1.16):0.35,(4:1.15,3:0.99):0.47):0.20):7.40);
+Found 327 candidate loci
+17106 pairwise comparisons made between cells to infer phylogeny
+((0:2.01,((2:1.15,1:1.16):0.35,(4:1.15,3:0.99):0.47):0.20):7.40);
+Found 319 candidate loci
+17919 pairwise comparisons made between cells to infer phylogeny
+((4:1.16,(0:1.19,((3:0.79,1:0.67):0.11,2:1.14):0.09):0.41):7.71);
+Found 319 candidate loci
+17919 pairwise comparisons made between cells to infer phylogeny
+((4:1.16,(0:1.19,((3:0.79,1:0.67):0.11,2:1.14):0.09):0.41):7.71);
+Found 370 candidate loci
+18666 pairwise comparisons made between cells to infer phylogeny
+((2:1.66,(((3:1.72,0:2.01):0.28,4:1.54):0.16,1:1.94):0.05):8.19);
+Found 370 candidate loci
+18666 pairwise comparisons made between cells to infer phylogeny
+((2:1.66,(((3:1.72,0:2.01):0.28,4:1.54):0.16,1:1.94):0.05):8.19);
+Found 347 candidate loci
+19203 pairwise comparisons made between cells to infer phylogeny
+((4:2.19,((2:1.40,0:1.36):0.34,(3:2.24,1:1.53):0.30):0.55):8.14);
+Found 347 candidate loci
+19203 pairwise comparisons made between cells to infer phylogeny
+((4:2.19,((2:1.40,0:1.36):0.34,(3:2.24,1:1.53):0.30):0.55):8.14);
+Found 360 candidate loci
+18711 pairwise comparisons made between cells to infer phylogeny
+((0:1.67,((2:1.19,1:0.87):0.16,(4:1.36,3:1.13):0.15):0.18):9.74);
+Found 360 candidate loci
+18711 pairwise comparisons made between cells to infer phylogeny
+((0:1.67,((2:1.19,1:0.87):0.16,(4:1.36,3:1.13):0.15):0.18):9.74);
+Found 380 candidate loci
+18407 pairwise comparisons made between cells to infer phylogeny
+((3:1.41,(2:1.37,((4:1.56,0:1.40):0.34,1:1.18):0.15):0.24):10.19);
+Found 380 candidate loci
+18407 pairwise comparisons made between cells to infer phylogeny
+((3:1.41,(2:1.37,((4:1.56,0:1.40):0.34,1:1.18):0.15):0.24):10.19);
+Found 417 candidate loci
+18328 pairwise comparisons made between cells to infer phylogeny
+((0:2.65,((4:1.62,3:0.94):0.17,(2:1.78,1:1.90):0.16):0.28):10.80);
+Found 417 candidate loci
+18328 pairwise comparisons made between cells to infer phylogeny
+((0:2.65,((4:1.62,3:0.94):0.17,(2:1.78,1:1.90):0.16):0.28):10.80);
+Found 394 candidate loci
+18091 pairwise comparisons made between cells to infer phylogeny
+((((4:1.17,3:1.10):0.43,2:1.91):0.33,(1:1.62,0:1.67):0.32):11.43);
+Found 394 candidate loci
+18091 pairwise comparisons made between cells to infer phylogeny
+((((4:1.17,3:1.10):0.43,2:1.91):0.33,(1:1.62,0:1.67):0.32):11.43);
+Found 462 candidate loci
+16361 pairwise comparisons made between cells to infer phylogeny
+((((4:2.18,3:1.96):0.64,0:2.60):0.20,(2:2.56,1:3.25):0.18):12.08);
+Found 462 candidate loci
+16361 pairwise comparisons made between cells to infer phylogeny
+((((4:2.18,3:1.96):0.64,0:2.60):0.20,(2:2.56,1:3.25):0.18):12.08);
+Found 440 candidate loci
+17138 pairwise comparisons made between cells to infer phylogeny
+((4:2.93,(1:1.81,((3:0.97,2:0.94):0.88,0:2.06):0.39):0.63):11.69);
+Found 440 candidate loci
+17138 pairwise comparisons made between cells to infer phylogeny
+((4:2.93,(1:1.81,((3:0.97,2:0.94):0.88,0:2.06):0.39):0.63):11.69);
+Found 430 candidate loci
+17533 pairwise comparisons made between cells to infer phylogeny
+((4:3.10,(1:2.03,(2:1.20,(3:1.73,0:0.81):0.48):0.55):0.85):11.81);
+Found 430 candidate loci
+17533 pairwise comparisons made between cells to infer phylogeny
+((4:3.10,(1:2.03,(2:1.20,(3:1.73,0:0.81):0.48):0.55):0.85):11.81);
+Found 466 candidate loci
+15739 pairwise comparisons made between cells to infer phylogeny
+((1:2.08,(4:1.18,(3:2.16,(2:1.78,0:1.73):0.11):0.22):0.67):13.73);
+Found 466 candidate loci
+15739 pairwise comparisons made between cells to infer phylogeny
+((1:2.08,(4:1.18,(3:2.16,(2:1.78,0:1.73):0.11):0.22):0.67):13.73);
+Found 465 candidate loci
+16932 pairwise comparisons made between cells to infer phylogeny
+((4:2.30,(3:2.00,(0:1.01,(2:1.70,1:0.95):0.25):0.26):0.69):14.14);
+Found 465 candidate loci
+16932 pairwise comparisons made between cells to infer phylogeny
+((4:2.30,(3:2.00,(0:1.01,(2:1.70,1:0.95):0.25):0.26):0.69):14.14);
+Found 477 candidate loci
+16410 pairwise comparisons made between cells to infer phylogeny
+((1:2.22,(2:1.72,((4:0.61,0:1.68):0.25,3:2.27):0.34):1.11):14.43);
+Found 477 candidate loci
+16410 pairwise comparisons made between cells to infer phylogeny
+((1:2.22,(2:1.72,((4:0.61,0:1.68):0.25,3:2.27):0.34):1.11):14.43);
+Found 513 candidate loci
+17266 pairwise comparisons made between cells to infer phylogeny
+((3:2.49,(4:2.46,(0:1.94,(2:2.19,1:1.48):0.14):0.38):0.41):16.29);
+Found 513 candidate loci
+17266 pairwise comparisons made between cells to infer phylogeny
+((3:2.49,(4:2.46,(0:1.94,(2:2.19,1:1.48):0.14):0.38):0.41):16.29);
+Found 502 candidate loci
+16724 pairwise comparisons made between cells to infer phylogeny
+((2:3.19,(3:2.43,(4:2.57,(1:1.99,0:2.88):0.21):0.81):0.72):14.81);
+Found 502 candidate loci
+16724 pairwise comparisons made between cells to infer phylogeny
+((2:3.19,(3:2.43,(4:2.57,(1:1.99,0:2.88):0.21):0.81):0.72):14.81);
+Found 463 candidate loci
+14579 pairwise comparisons made between cells to infer phylogeny
+((4:3.33,(((2:1.78,0:1.83):0.31,1:1.74):0.51,3:2.53):0.34):15.84);
+Found 463 candidate loci
+14579 pairwise comparisons made between cells to infer phylogeny
+((4:3.33,(((2:1.78,0:1.83):0.31,1:1.74):0.51,3:2.53):0.34):15.84);
+Found 504 candidate loci
+16794 pairwise comparisons made between cells to infer phylogeny
+((3:1.72,(0:1.86,((4:0.82,1:2.56):0.41,2:1.32):0.05):0.44):17.03);
+Found 504 candidate loci
+16794 pairwise comparisons made between cells to infer phylogeny
+((3:1.72,(0:1.86,((4:0.82,1:2.56):0.41,2:1.32):0.05):0.44):17.03);
+Found 479 candidate loci
+15528 pairwise comparisons made between cells to infer phylogeny
+(((3:1.41,1:2.31):0.62,((4:2.14,0:2.07):0.44,2:2.82):0.33):15.90);
+Found 479 candidate loci
+15528 pairwise comparisons made between cells to infer phylogeny
+(((3:1.41,1:2.31):0.62,((4:2.14,0:2.07):0.44,2:2.82):0.33):15.90);
+Found 488 candidate loci
+17039 pairwise comparisons made between cells to infer phylogeny
+((0:1.80,(2:1.44,(3:1.34,(4:1.19,1:1.61):0.09):0.09):0.13):17.82);
+Found 488 candidate loci
+17039 pairwise comparisons made between cells to infer phylogeny
+((0:1.80,(2:1.44,(3:1.34,(4:1.19,1:1.61):0.09):0.09):0.13):17.82);
+Found 499 candidate loci
+15322 pairwise comparisons made between cells to infer phylogeny
+((0:2.99,(2:2.45,((3:2.83,1:3.02):0.70,4:1.19):0.61):0.67):16.66);
+Found 499 candidate loci
+15322 pairwise comparisons made between cells to infer phylogeny
+((0:2.99,(2:2.45,((3:2.83,1:3.02):0.70,4:1.19):0.61):0.67):16.66);
+Found 529 candidate loci
+17725 pairwise comparisons made between cells to infer phylogeny
+((3:3.57,((4:2.66,2:1.39):0.31,(1:1.98,0:3.34):0.20):0.37):17.79);
+Found 529 candidate loci
+17725 pairwise comparisons made between cells to infer phylogeny
+((3:3.57,((4:2.66,2:1.39):0.31,(1:1.98,0:3.34):0.20):0.37):17.79);
+Found 535 candidate loci
+15959 pairwise comparisons made between cells to infer phylogeny
+((0:2.45,(3:2.09,(4:2.00,(2:1.12,1:1.25):0.08):0.37):0.75):18.82);
+Found 535 candidate loci
+15959 pairwise comparisons made between cells to infer phylogeny
+((0:2.45,(3:2.09,(4:2.00,(2:1.12,1:1.25):0.08):0.37):0.75):18.82);
+Found 556 candidate loci
+16119 pairwise comparisons made between cells to infer phylogeny
+(((2:2.44,1:2.22):0.53,((4:1.47,3:1.41):0.73,0:1.51):0.47):19.62);
+Found 556 candidate loci
+16119 pairwise comparisons made between cells to infer phylogeny
+(((2:2.44,1:2.22):0.53,((4:1.47,3:1.41):0.73,0:1.51):0.47):19.62);
+Found 551 candidate loci
+16560 pairwise comparisons made between cells to infer phylogeny
+((3:2.26,(4:2.02,(2:2.60,(1:1.65,0:1.61):0.02):0.18):0.19):20.16);
+Found 551 candidate loci
+16560 pairwise comparisons made between cells to infer phylogeny
+((3:2.26,(4:2.02,(2:2.60,(1:1.65,0:1.61):0.02):0.18):0.19):20.16);
+Found 561 candidate loci
+15984 pairwise comparisons made between cells to infer phylogeny
+((4:3.03,(0:2.75,((2:2.59,1:1.91):0.88,3:2.75):0.28):0.40):19.80);
+Found 561 candidate loci
+15984 pairwise comparisons made between cells to infer phylogeny
+((4:3.03,(0:2.75,((2:2.59,1:1.91):0.88,3:2.75):0.28):0.40):19.80);
+Found 583 candidate loci
+17849 pairwise comparisons made between cells to infer phylogeny
+((2:1.98,(0:2.41,((3:1.63,1:1.41):0.90,4:2.28):0.11):0.35):21.44);
+Found 583 candidate loci
+17849 pairwise comparisons made between cells to infer phylogeny
+((2:1.98,(0:2.41,((3:1.63,1:1.41):0.90,4:2.28):0.11):0.35):21.44);
+Found 595 candidate loci
+16144 pairwise comparisons made between cells to infer phylogeny
+((3:3.56,((1:1.46,0:1.77):0.43,(4:2.34,2:2.91):0.46):0.28):21.71);
+Found 595 candidate loci
+16144 pairwise comparisons made between cells to infer phylogeny
+((3:3.56,((1:1.46,0:1.77):0.43,(4:2.34,2:2.91):0.46):0.28):21.71);
+Found 603 candidate loci
+17458 pairwise comparisons made between cells to infer phylogeny
+(((4:2.98,2:2.43):0.48,(0:3.25,(1:2.54,3:2.06):0.27):0.50):22.13);
+Found 603 candidate loci
+17458 pairwise comparisons made between cells to infer phylogeny
+(((4:2.98,2:2.43):0.48,(0:3.25,(1:2.54,3:2.06):0.27):0.50):22.13);
+Found 614 candidate loci
+17552 pairwise comparisons made between cells to infer phylogeny
+((4:3.21,((1:2.74,0:2.49):0.64,(3:2.66,2:1.81):0.16):0.58):22.83);
+Found 614 candidate loci
+17552 pairwise comparisons made between cells to infer phylogeny
+((4:3.21,((1:2.74,0:2.49):0.64,(3:2.66,2:1.81):0.16):0.58):22.83);
+Found 617 candidate loci
+16256 pairwise comparisons made between cells to infer phylogeny
+((3:3.63,(((4:1.66,0:1.65):1.13,1:2.71):0.78,2:3.34):0.09):22.65);
+Found 617 candidate loci
+16256 pairwise comparisons made between cells to infer phylogeny
+((3:3.63,(((4:1.66,0:1.65):1.13,1:2.71):0.78,2:3.34):0.09):22.65);
+Found 584 candidate loci
+16396 pairwise comparisons made between cells to infer phylogeny
+(((3:3.23,0:2.16):1.11,(2:3.22,(4:2.17,1:1.86):0.26):0.74):23.27);
+Found 584 candidate loci
+16396 pairwise comparisons made between cells to infer phylogeny
+(((3:3.23,0:2.16):1.11,(2:3.22,(4:2.17,1:1.86):0.26):0.74):23.27);
+Found 606 candidate loci
+15508 pairwise comparisons made between cells to infer phylogeny
+(((1:3.21,0:2.08):0.76,((4:1.61,3:1.46):0.44,2:2.87):0.29):24.78);
+Found 606 candidate loci
+15508 pairwise comparisons made between cells to infer phylogeny
+(((1:3.21,0:2.08):0.76,((4:1.61,3:1.46):0.44,2:2.87):0.29):24.78);
+Found 623 candidate loci
+16897 pairwise comparisons made between cells to infer phylogeny
+((2:4.37,(3:3.65,((4:2.86,1:3.14):0.98,0:2.01):0.10):0.56):23.48);
+Found 623 candidate loci
+16897 pairwise comparisons made between cells to infer phylogeny
+((2:4.37,(3:3.65,((4:2.86,1:3.14):0.98,0:2.01):0.10):0.56):23.48);
+Found 637 candidate loci
+15028 pairwise comparisons made between cells to infer phylogeny
+((((3:2.58,0:2.02):0.34,2:2.56):0.62,(4:2.95,1:2.19):0.35):24.73);
+Found 637 candidate loci
+15028 pairwise comparisons made between cells to infer phylogeny
+((((3:2.58,0:2.02):0.34,2:2.56):0.62,(4:2.95,1:2.19):0.35):24.73);
+Found 636 candidate loci
+18737 pairwise comparisons made between cells to infer phylogeny
+((2:3.48,((3:1.96,0:2.00):0.61,(4:2.79,1:1.80):0.31):1.24):24.24);
+Found 636 candidate loci
+18737 pairwise comparisons made between cells to infer phylogeny
+((2:3.48,((3:1.96,0:2.00):0.61,(4:2.79,1:1.80):0.31):1.24):24.24);
+Found 643 candidate loci
+15247 pairwise comparisons made between cells to infer phylogeny
+((3:5.20,(0:3.69,(2:2.74,(4:1.75,1:2.84):0.26):0.56):0.54):24.66);
+Found 643 candidate loci
+15247 pairwise comparisons made between cells to infer phylogeny
+((3:5.20,(0:3.69,(2:2.74,(4:1.75,1:2.84):0.26):0.56):0.54):24.66);
+Found 642 candidate loci
+17467 pairwise comparisons made between cells to infer phylogeny
+((4:2.85,(((3:1.93,2:1.84):0.40,1:2.18):1.00,0:3.32):0.28):25.62);
+Found 642 candidate loci
+17467 pairwise comparisons made between cells to infer phylogeny
+((4:2.85,(((3:1.93,2:1.84):0.40,1:2.18):1.00,0:3.32):0.28):25.62);
+Found 615 candidate loci
+16767 pairwise comparisons made between cells to infer phylogeny
+((0:3.97,(2:3.20,(1:2.12,(4:1.87,3:1.97):0.06):0.19):0.54):25.53);
+Found 615 candidate loci
+16767 pairwise comparisons made between cells to infer phylogeny
+((0:3.97,(2:3.20,(1:2.12,(4:1.87,3:1.97):0.06):0.19):0.54):25.53);
+Found 630 candidate loci
+17072 pairwise comparisons made between cells to infer phylogeny
+((2:2.71,(1:2.76,(0:2.95,(3:1.89,4:2.11):0.24):0.32):0.45):26.41);
+Found 630 candidate loci
+17072 pairwise comparisons made between cells to infer phylogeny
+((2:2.71,(1:2.76,(0:2.95,(3:1.89,4:2.11):0.24):0.32):0.45):26.41);
+Found 658 candidate loci
+17882 pairwise comparisons made between cells to infer phylogeny
+((0:2.40,(4:2.84,(1:1.97,(3:1.99,2:2.82):0.13):0.15):0.86):27.56);
+Found 658 candidate loci
+17882 pairwise comparisons made between cells to infer phylogeny
+((0:2.40,(4:2.84,(1:1.97,(3:1.99,2:2.82):0.13):0.15):0.86):27.56);
+Found 624 candidate loci
+15489 pairwise comparisons made between cells to infer phylogeny
+((4:1.88,(1:2.09,(3:2.24,(2:2.09,0:2.22):0.01):0.09):0.23):28.42);
+Found 624 candidate loci
+15489 pairwise comparisons made between cells to infer phylogeny
+((4:1.88,(1:2.09,(3:2.24,(2:2.09,0:2.22):0.01):0.09):0.23):28.42);
+Found 648 candidate loci
+16989 pairwise comparisons made between cells to infer phylogeny
+((3:4.06,(2:2.71,(0:3.22,(4:2.17,1:2.08):0.46):0.48):0.84):27.94);
+Found 648 candidate loci
+16989 pairwise comparisons made between cells to infer phylogeny
+((3:4.06,(2:2.71,(0:3.22,(4:2.17,1:2.08):0.46):0.48):0.84):27.94);
+Found 637 candidate loci
+14705 pairwise comparisons made between cells to infer phylogeny
+((2:3.15,(1:2.08,((3:3.18,0:2.06):0.15,4:3.22):0.09):0.41):28.34);
+Found 637 candidate loci
+14705 pairwise comparisons made between cells to infer phylogeny
+((2:3.15,(1:2.08,((3:3.18,0:2.06):0.15,4:3.22):0.09):0.41):28.34);
+Found 641 candidate loci
+17226 pairwise comparisons made between cells to infer phylogeny
+(((3:2.72,2:1.64):0.43,(0:2.46,(4:2.21,1:2.12):0.12):0.27):29.91);
+Found 641 candidate loci
+17226 pairwise comparisons made between cells to infer phylogeny
+(((3:2.72,2:1.64):0.43,(0:2.46,(4:2.21,1:2.12):0.12):0.27):29.91);
+Found 640 candidate loci
+15176 pairwise comparisons made between cells to infer phylogeny
+((0:2.50,(1:2.37,((4:1.98,3:2.20):0.24,2:2.11):0.13):1.23):29.28);
+Found 640 candidate loci
+15176 pairwise comparisons made between cells to infer phylogeny
+((0:2.50,(1:2.37,((4:1.98,3:2.20):0.24,2:2.11):0.13):1.23):29.28);
+Found 646 candidate loci
+15193 pairwise comparisons made between cells to infer phylogeny
+((3:2.21,(4:1.84,(0:1.96,(2:1.94,1:2.41):0.20):0.39):0.74):30.07);
+Found 646 candidate loci
+15193 pairwise comparisons made between cells to infer phylogeny
+((3:2.21,(4:1.84,(0:1.96,(2:1.94,1:2.41):0.20):0.39):0.74):30.07);
+Found 610 candidate loci
+16773 pairwise comparisons made between cells to infer phylogeny
+((1:2.13,(3:3.27,(0:2.61,(4:2.34,2:2.53):0.05):0.11):0.49):29.92);
+Found 610 candidate loci
+16773 pairwise comparisons made between cells to infer phylogeny
+((1:2.13,(3:3.27,(0:2.61,(4:2.34,2:2.53):0.05):0.11):0.49):29.92);
+Found 627 candidate loci
+15367 pairwise comparisons made between cells to infer phylogeny
+((1:1.83,(0:2.17,(4:2.23,(3:2.25,2:2.23):0.06):0.21):0.39):31.94);
+Found 627 candidate loci
+15367 pairwise comparisons made between cells to infer phylogeny
+((1:1.83,(0:2.17,(4:2.23,(3:2.25,2:2.23):0.06):0.21):0.39):31.94);
+Found 637 candidate loci
+15277 pairwise comparisons made between cells to infer phylogeny
+((3:2.11,(4:2.26,(0:2.46,(2:3.79,1:2.39):0.06):0.23):0.18):31.84);
+Found 637 candidate loci
+15277 pairwise comparisons made between cells to infer phylogeny
+((3:2.11,(4:2.26,(0:2.46,(2:3.79,1:2.39):0.06):0.23):0.18):31.84);
