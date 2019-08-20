@@ -168,8 +168,8 @@ def test_params(m_cells, iters, params):
     os.remove("temp_c.vcf")
     return (site_results, cell_results)
 
-posterior_threshs = [0, 1.0e-9, 1.0e-6, 1.0e-3, 5.0e-3, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 1]
-candidate_threshs = [0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
+posterior_threshs = [0, 1.0e-9, 1.0e-3, 3.16e-3, 1.0e-2, 3.16e-2, 1.0e-2, 3.16e-2, 1.0e-1, 3.16e-1, 0.5, 1]
+candidate_threshs = [0.6]
 site_data = pd.DataFrame(columns=["cand","post","precision","recall","F1"])
 cell_data = pd.DataFrame(columns=["cand","post","precision","recall","F1"])
 i = 0
@@ -179,7 +179,7 @@ for t1 in candidate_threshs:
         prms["candidate-threshold"] = t1
         prms["posterior-threshold"] = t2
         site_res, cell_res = test_params(10, 50, prms)
-        for j in range(50):
+        for j in range(80):
             site_data.loc[i] = [t1, t2, *site_res[j]]
             cell_data.loc[i] = [t1, t2, *cell_res[j]]
             i += 1
