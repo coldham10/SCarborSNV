@@ -288,8 +288,8 @@ class Phylogeny:
 
 if __name__ == "__main__":
     T = Phylogeny()
-    T.evolve(n_generations=1000, germline=True)
-    T.evolve(n_cells=5, germline=False)
+    T.evolve(n_generations=800, germline=True)
+    T.evolve(n_cells=10, germline=False)
     print(len(T.active_nodes))
     T.prepare()
     T.print_tree()
