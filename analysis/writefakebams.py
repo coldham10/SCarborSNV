@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import sys
 
 def write_fake_bams(m, is_sciphi=False):
     filestxt = open("filenames.txt", 'w+')
@@ -68,4 +69,5 @@ def write_fake_bams(m, is_sciphi=False):
     filestxt.close()
 
 if __name__ == "__main__":
-    write_fake_bams(10, is_sciphi=True)
+    n = int(sys.argv[1])
+    write_fake_bams(n, is_sciphi=True)
