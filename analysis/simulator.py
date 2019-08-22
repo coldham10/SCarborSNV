@@ -150,23 +150,23 @@ class Phylogeny:
         self.__drop_alleles()
 
 
-    def __print_node(self, T):
+    def __print_node(self, T, f):
         if T.is_root:
-            print('(', end='')
+            f.write('(')
         if T.c1 == None:
-            print(T.print_label, end='')
+            f.write(T.print_label)
             return
-        print('(', end='')
-        self.__print_node(T.c1)
-        print(":{},".format(1+len(T.c1.SNVs) - len(T.SNVs)), end='')
-        self.__print_node(T.c2)
-        print(":{})".format(1+len(T.c2.SNVs) - len(T.SNVs)), end='')
+        f.write('(')
+        self.__print_node(T.c1, f)
+        f.write(":{},".format(1+len(T.c1.SNVs) - len(T.SNVs)))
+        self.__print_node(T.c2, f)
+        f.write(":{})".format(1+len(T.c2.SNVs) - len(T.SNVs)))
         if T.is_root:
-            print(":{})RT;".format(1 + len(T.SNVs)))
+            f.write(":{})RT;\n".format(1 + len(T.SNVs)))
         return
 
-    def print_tree(self):
-        self.__print_node(self.root)
+    def print_tree(self, f):
+        self.__print_node(self.root, f)
         return
 
 
@@ -292,7 +292,7 @@ if __name__ == "__main__":
     T.evolve(n_cells=10, germline=False)
     print(len(T.active_nodes))
     T.prepare()
-    T.print_tree()
+    #T.print_tree()
     vcf_f = open(VCF_FILENAME, "w+")
     T.write_vcf(vcf_f)
     vcf_f.close()

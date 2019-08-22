@@ -2,7 +2,7 @@
 import os
 import subprocess
 
-def write_fake_bams(m):
+def write_fake_bams(m, is_sciphi=False):
     filestxt = open("filenames.txt", 'w+')
     currdir = os.getcwd()
     for i in range(m):
@@ -61,5 +61,11 @@ def write_fake_bams(m):
         samfile.close()
         subprocess.run(["samtools", "view", "-b", fname + "sam", "-o", fname + "bam"])
         os.remove(fname + "sam")
-        filestxt.write(fname + "bam\n")
+        if is_sciphi:
+            filestxt.write(fname + "bam\tCT\n")
+        else:
+            filestxt.write(fname + "bam\n")
+    filestxt.close()
 
+if __name__ == "__main__":
+    write_fake_bams(10, is_sciphi=True)

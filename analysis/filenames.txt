@@ -1,10 +1,10 @@
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake0.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake1.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake2.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake3.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake4.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake5.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake6.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake7.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake8.bam
-/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake9.bam
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake0.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake1.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake2.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake3.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake4.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake5.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake6.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake7.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake8.bam	CT
+/home/oldham/Research/Projects/SCarborSNV/analysis/fakebams/fake9.bam	CT
