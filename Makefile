@@ -18,6 +18,7 @@ $(EXE): $(OBJ)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@ mkdir -p obj
 	$(CC) $(PPFLAGS) $(CCFLAGS) -c $< -o $@
 
 clean:
