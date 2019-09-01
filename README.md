@@ -23,7 +23,12 @@ Or, for example, to use a compressed mpileup file:
 
 Command line options are:
 
-|`-m  --n-cells`| Number of cells in pileup file|
+| H1 | H2 | H3 |
+|------------|------|------|
+| Test table | col2 | col3 |
+
+
+`-m  --n-cells`:  Number of cells in pileup file|
 ` --lambda              required_argument, NULL, 'l'},
 {"mu",                  required_argument, NULL, 'u'},
 {"p-haploid",           required_argument, NULL, 'h'},
