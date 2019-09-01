@@ -21,6 +21,8 @@
 #ifndef TREE_H_
 #define TREE_H_
 
+#include <stdio.h>
+
 /*Note in general each node holds information about the edge above it*/
 typedef struct Node {
     long double edge_dists[3];
@@ -47,7 +49,7 @@ typedef struct Node {
  * be the expected Jukes Cantor distance between pairs of cells */
 int expected_jukes_cantor(long double** JC_dist, long double** freq_numr, int** freq_denom, int m);
 Node* build_tree_nj(long double** dist_mat, int m);
-void print_tree(Node* T);
+void print_tree(Node* T, FILE* treefile);
 void delete_tree(Node* T);
 
 #endif

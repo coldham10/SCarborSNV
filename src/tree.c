@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include "tree.h"
-#include <stdio.h>
 /*FIXME remove*/
 #include <assert.h>
 
@@ -241,21 +240,21 @@ void delete_tree(Node* T) {
     free(T);
 }
 
-void print_tree(Node* T) {
+void print_tree(Node* T, FILE* treefile) {
     if(T->is_cell) {
-        printf("%d", T->id);
+        fprintf(treefile, "%d", T->id);
         return;
     }
-    printf("(");
-    print_tree(T->nbrs[1]);
-    printf(":%.2Lf", 100*T->edge_dists[1]);
+    fprintf(treefile, "(");
+    print_tree(T->nbrs[1], treefile);
+    fprintf(treefile, ":%.2Lf", 100*T->edge_dists[1]);
     if (!T->is_root) {
-        printf(",");
-        print_tree(T->nbrs[2]);
-        printf(":%.2Lf", 100*T->edge_dists[2]);
+        fprintf(treefile, ",");
+        print_tree(T->nbrs[2], treefile);
+        fprintf(treefile, ":%.2Lf", 100*T->edge_dists[2]);
     }
-    printf(")");
-    if (T->is_root) { printf(";\n"); }
+    fprintf(treefile, ")");
+    if (T->is_root) { fprintf(treefile, ";\n"); }
 }
 
 /*

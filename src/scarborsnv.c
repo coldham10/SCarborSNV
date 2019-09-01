@@ -53,6 +53,7 @@ int main(int argc, char** argv) {
     FILE* instream;
     FILE* f_candidates;
     FILE* f_vcf;
+    FILE* f_tree;
     long double** p_bar_numerators;
     long double** distance_matrix;
     int** p_bar_denominators;
@@ -137,8 +138,10 @@ int main(int argc, char** argv) {
     T = build_tree_nj(distance_matrix, m);
     for (i = 0; i < m + 1; i++) { free(distance_matrix[i]); }
     free(distance_matrix);
-    print_tree(T);
-    f_vcf = fopen(gp->vcf_fname,"w");
+    f_tree = fopen(gp->tree_fname, "w");
+    print_tree(T, f_tree);
+    fclose(f_tree);
+    f_vcf = fopen(gp->vcf_fname, "w");
     if (f_candidates == NULL) {
         free(p0); free(gp);
         delete_tree(T);
@@ -345,6 +348,7 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
     int omit_phylo = 0;
     strcpy(gp->tmp_fname, "/tmp/SCarborSNV_cand_tmp");
     strcpy(gp->vcf_fname, "SCarborSNV_out.vcf");
+    strcpy(gp->tree_fname, "SCarborSNV_tree.newick");
     /*Using getopt to get command line arguments */
     /*TODO: handle getting bams */
     static struct option prior_options[] = {
@@ -360,7 +364,8 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
         {"p-ado",               required_argument, NULL, 'C'},
         {"candidate-threshold", required_argument, NULL, 'D'},
         {"posterior-threshold", required_argument, NULL, 'E'},
-        {"omit-phylo-inference", no_argument      , NULL, 'F'}
+        {"omit-phylo-inference", no_argument     , NULL, 'F'},
+        {"tree-file",           required_argument, NULL, 'G'}
     };
     int c, opt_idx = 0;
     while ((c = getopt_long(argc, argv, "t:p:m:o:", prior_options, &opt_idx) )!= -1 ) {
@@ -408,6 +413,9 @@ void init_params(global_params_t* gp, prior_params_t* p0, int argc, char** argv)
                 break;
             case 'F':
                 omit_phylo = 1;
+                break;
+            case 'G':
+                strcpy(gp->tree_fname, optarg);
                 break;
         }
     }

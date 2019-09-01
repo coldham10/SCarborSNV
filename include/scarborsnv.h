@@ -36,6 +36,7 @@ typedef struct {
     char mp_fname[512];
     char tmp_fname[512];
     char vcf_fname[512];
+    char tree_fname[512];
     double pc_thresh; /*threshold below which cell posterior p(g=0) indicates variant (regardless of phylo)*/
     unsigned int n_threads;
     int m; /*Number of cells */
